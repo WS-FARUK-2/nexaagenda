@@ -1,0 +1,5 @@
+{
+  "name": "NexaAgenda",
+  "description": "A Next.js 14 project with Supabase integration.",
+  "requestFramePermissions": []
+}
