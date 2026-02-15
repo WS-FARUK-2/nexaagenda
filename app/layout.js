@@ -1,18 +1,14 @@
 export const metadata = {
-  title: 'NexaAgenda',
-  description: 'NexaAgenda Project',
-}
+  title: "NexaAgenda",
+  description: "Sistema de Agendamento SaaS",
+};
 
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
-      <head>
-        {/* Tailwind CSS for styling */}
-        <script src="https://cdn.tailwindcss.com"></script>
-      </head>
-      <body className="antialiased bg-gray-950 text-white">
+      <body style={{ margin: 0, padding: 0 }}>
         {children}
       </body>
     </html>
-  )
+  );
 }
