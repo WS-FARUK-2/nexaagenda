@@ -99,20 +99,31 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Cards de resumo (placeholders) */}
+      {/* Cards de resumo */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: '20px'
       }}>
-        <div style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
+        {/* Card Clientes com link */}
+        <div 
+          onClick={() => router.push('/clientes')}
+          style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '8px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
           <h3 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Clientes</h3>
           <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>0</p>
+          <p style={{ margin: '5px 0 0', color: '#2563eb', fontSize: '14px' }}>
+            Clique para gerenciar →
+          </p>
         </div>
 
         <div style={{
