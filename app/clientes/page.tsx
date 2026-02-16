@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
+import ConfirmModal from '@/components/ConfirmModal'
 
 type Cliente = {
   id: string
@@ -25,6 +26,7 @@ export default function ClientesPage() {
     phone: ''
   })
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; clienteId: string; clienteName: string }>({ isOpen: false, clienteId: '', clienteName: '' })
   const router = useRouter()
 
   // Buscar clientes

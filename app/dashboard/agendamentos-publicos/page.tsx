@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Toast from '@/components/Toast';
 import EmptyState from '@/components/EmptyState';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface AgendamentoPublico {
   id: string;
@@ -32,6 +33,7 @@ export default function AgendamentosPublicos() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; agendamentoId: string; clienteName: string }>({ isOpen: false, agendamentoId: '', clienteName: '' });
 
   useEffect(() => {
     checkUser();
@@ -96,8 +98,6 @@ export default function AgendamentosPublicos() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
-
     try {
       const { error } = await supabase
         .from('agendamentos_publicos')
@@ -108,6 +108,7 @@ export default function AgendamentosPublicos() {
 
       setAgendamentos(agendamentos.filter(agend => agend.id !== id));
       setToast({ message: 'Agendamento excluído com sucesso!', type: 'success' });
+      setConfirmModal({ isOpen: false, agendamentoId: '', clienteName: '' });
     } catch (error) {
       console.error('Erro ao excluir agendamento:', error);
       setToast({ message: 'Erro ao excluir agendamento', type: 'error' });
@@ -446,7 +447,7 @@ export default function AgendamentosPublicos() {
                       </button>
                     )}
                     <button
-                      onClick={() => handleDelete(agendamento.id)}
+                      onClick={() => setConfirmModal({ isOpen: true, agendamentoId: agendamento.id, clienteName: agendamento.nome_cliente })}
                       style={{
                         padding: '8px 14px',
                         backgroundColor: '#6b7280',
@@ -507,6 +508,19 @@ export default function AgendamentosPublicos() {
           Mostrando <strong>{filteredAgendamentos.length}</strong> de <strong>{agendamentos.length}</strong> agendamentos
         </p>
       </div>
+      
+      {/* Modal de confirmação */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Excluir Agendamento"
+        message={`Tem certeza que deseja excluir o agendamento de ${confirmModal.clienteName}? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+        onConfirm={() => handleDelete(confirmModal.agendamentoId)}
+        onCancel={() => setConfirmModal({ isOpen: false, agendamentoId: '', clienteName: '' })}
+      />
+      
       {toast && (
         <Toast
           message={toast.message}

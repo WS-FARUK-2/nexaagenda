@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
+import ConfirmModal from '@/components/ConfirmModal'
 
 interface Patient {
   id: string
@@ -40,6 +41,7 @@ export default function AgendamentosPage() {
   const [success, setSuccess] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; appointmentId: string }>({ isOpen: false, appointmentId: '' })
 
   const [formData, setFormData] = useState({
     patient_id: '',
@@ -199,8 +201,6 @@ export default function AgendamentosPage() {
 
   // Deletar
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja deletar este agendamento?')) return
-
     try {
       const { error: deleteError } = await supabase
         .from('appointments')
@@ -211,6 +211,7 @@ export default function AgendamentosPage() {
 
       setToast({ message: 'Agendamento deletado com sucesso!', type: 'success' })
       setSuccess('Agendamento deletado com sucesso!')
+      setConfirmModal({ isOpen: false, appointmentId: '' })
       loadData(user.id)
     } catch (err: any) {
       setToast({ message: err.message || 'Erro ao deletar agendamento', type: 'error' })
@@ -530,7 +531,7 @@ export default function AgendamentosPage() {
                         Editar
                       </button>
                       <button
-                        onClick={() => handleDelete(apt.id)}
+                        onClick={() => setConfirmModal({ isOpen: true, appointmentId: apt.id })}
                         style={{
                           padding: '6px 12px',
                           backgroundColor: '#dc3545',
@@ -551,6 +552,19 @@ export default function AgendamentosPage() {
           </div>
         )}
       </div>
+      
+      {/* Modal de confirmação */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Deletar Agendamento"
+        message="Tem certeza que deseja deletar este agendamento? Esta ação não pode ser desfeita."
+        confirmText="Deletar"
+        cancelText="Cancelar"
+        type="danger"
+        onConfirm={() => handleDelete(confirmModal.appointmentId)}
+        onCancel={() => setConfirmModal({ isOpen: false, appointmentId: '' })}
+      />
+      
       {toast && (
         <Toast
           message={toast.message}
