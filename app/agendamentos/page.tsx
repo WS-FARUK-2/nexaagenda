@@ -132,6 +132,38 @@ export default function AgendamentosPage() {
     }
 
     try {
+      // Verificar conflito de horário (agendamentos internos E públicos)
+      const [internalConflicts, publicConflicts] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('appointment_date', formData.appointment_date)
+          .eq('appointment_time', formData.appointment_time)
+          .neq('status', 'Cancelado'),
+        supabase
+          .from('agendamentos_publicos')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('data_agendamento', formData.appointment_date)
+          .eq('hora_agendamento', formData.appointment_time)
+          .neq('status', 'Cancelado')
+      ])
+
+      // Se está editando, ignorar o próprio agendamento
+      const hasInternalConflict = editingId
+        ? internalConflicts.data?.some(apt => apt.id !== editingId)
+        : internalConflicts.data && internalConflicts.data.length > 0
+
+      const hasPublicConflict = publicConflicts.data && publicConflicts.data.length > 0
+
+      if (hasInternalConflict || hasPublicConflict) {
+        setToast({ message: '⚠️ Já existe um agendamento para este horário. Escolha outro horário.', type: 'error' })
+        setError('Já existe um agendamento para este horário')
+        setSubmitting(false)
+        return
+      }
+
       if (editingId) {
         // Atualizar
         const { error: updateError } = await supabase

@@ -124,15 +124,26 @@ export default function AgendarPage() {
           return
         }
 
-        // Buscar agendamentos já existentes para esta data
-        const { data: agendamentosData } = await supabase
-          .from('agendamentos_publicos')
-          .select('hora_agendamento')
-          .eq('user_id', profile.user_id)
-          .eq('data_agendamento', selectedDate)
-          .neq('status', 'Cancelado')
+        // Buscar agendamentos já existentes para esta data (públicos E internos)
+        const [publicBookings, privateAppointments] = await Promise.all([
+          supabase
+            .from('agendamentos_publicos')
+            .select('hora_agendamento')
+            .eq('user_id', profile.user_id)
+            .eq('data_agendamento', selectedDate)
+            .neq('status', 'Cancelado'),
+          supabase
+            .from('appointments')
+            .select('appointment_time')
+            .eq('user_id', profile.user_id)
+            .eq('appointment_date', selectedDate)
+            .neq('status', 'Cancelado')
+        ])
 
-        const horariosOcupados = agendamentosData?.map(a => a.hora_agendamento) || []
+        const horariosOcupados = [
+          ...(publicBookings.data?.map(a => a.hora_agendamento) || []),
+          ...(privateAppointments.data?.map(a => a.appointment_time) || [])
+        ]
 
         // Gerar horários disponíveis
         const times: string[] = []
@@ -226,7 +237,34 @@ export default function AgendarPage() {
         }
       }
 
-      // 3. Criar o agendamento público
+      // 3. Verificar conflito de horário antes de inserir (públicos E internos)
+      const [publicConflicts, privateConflicts] = await Promise.all([
+        supabase
+          .from('agendamentos_publicos')
+          .select('id')
+          .eq('user_id', profile!.user_id)
+          .eq('data_agendamento', selectedDate)
+          .eq('hora_agendamento', selectedTime)
+          .neq('status', 'Cancelado'),
+        supabase
+          .from('appointments')
+          .select('id')
+          .eq('user_id', profile!.user_id)
+          .eq('appointment_date', selectedDate)
+          .eq('appointment_time', selectedTime)
+          .neq('status', 'Cancelado')
+      ])
+
+      const hasConflict = (publicConflicts.data && publicConflicts.data.length > 0) || 
+                         (privateConflicts.data && privateConflicts.data.length > 0)
+
+      if (hasConflict) {
+        setError('⚠️ Este horário acabou de ser reservado. Por favor, escolha outro horário.')
+        setSubmitting(false)
+        return
+      }
+
+      // 4. Criar agendamento público
       const { error: insertError } = await supabase
         .from('agendamentos_publicos')
         .insert([{
