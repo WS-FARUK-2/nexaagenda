@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import Toast from '@/components/Toast'
+import EmptyState from '@/components/EmptyState'
 
 type Cliente = {
   id: string
@@ -21,6 +24,7 @@ export default function ClientesPage() {
     email: '',
     phone: ''
   })
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const router = useRouter()
 
   // Buscar clientes
@@ -68,10 +72,11 @@ export default function ClientesPage() {
       ])
 
     if (error) {
-      alert('Erro ao adicionar cliente: ' + error.message)
+      setToast({ message: 'Erro ao adicionar cliente: ' + error.message, type: 'error' })
     } else {
       setShowForm(false)
       setFormData({ name: '', email: '', phone: '' })
+      setToast({ message: 'Cliente cadastrado com sucesso!', type: 'success' })
       // Recarregar lista
       const { data: { user: currentUser } } = await supabase!.auth.getUser()
       if (currentUser) {
@@ -87,8 +92,8 @@ export default function ClientesPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '20px' }}>
-        Carregando...
+      <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <LoadingSpinner size={50} />
       </div>
     )
   }
@@ -209,8 +214,12 @@ export default function ClientesPage() {
           <tbody>
             {clientes.length === 0 ? (
               <tr>
-                <td colSpan={4} style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
-                  Nenhum cliente cadastrado
+                <td colSpan={4} style={{ padding: '0' }}>
+                  <EmptyState
+                    icon="👥"
+                    title="Nenhum cliente cadastrado"
+                    description="Clique no botão '+ Novo Cliente' para começar"
+                  />
                 </td>
               </tr>
             ) : (
@@ -228,6 +237,15 @@ export default function ClientesPage() {
           </tbody>
         </table>
       </div>
+      
+      {/* Toast de notificação */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

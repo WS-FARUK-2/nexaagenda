@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
@@ -81,9 +82,12 @@ export default function DashboardPage() {
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        fontFamily: 'Arial'
+        fontFamily: 'Arial',
+        flexDirection: 'column',
+        gap: '16px'
       }}>
-        Carregando...
+        <LoadingSpinner size={50} />
+        <p style={{ color: '#6b7280', fontSize: '14px' }}>Carregando...</p>
       </div>
     )
   }
