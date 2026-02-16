@@ -1,20 +1,26 @@
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 
 export default async function Home() {
-  // Verifica se supabase existe
-  if (!supabase) {
-    return <div>Erro de conexão com banco de dados</div>
-  }
+  // Criar cliente Supabase diretamente aqui
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   
-  const { data: profiles, error } = await supabase.from('profiles').select('*')
+  const supabase = createClient(supabaseUrl, supabaseKey)
   
-  // Se deu erro na conexão
+  // Testar conexão
+  const { error } = await supabase.from('profiles').select('*')
+  
   if (error) {
-    console.error('Erro:', error)
-    return <div>Erro ao conectar: {error.message}</div>
+    console.error('Erro de conexão:', error)
+    return (
+      <div style={{ padding: '20px' }}>
+        <h1>Erro de conexão</h1>
+        <p>{error.message}</p>
+      </div>
+    )
   }
   
-  // Se tudo ok, redireciona para login
+  // Se tudo ok, vai para login
   redirect('/login')
 }
