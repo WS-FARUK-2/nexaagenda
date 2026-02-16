@@ -37,6 +37,13 @@ CREATE POLICY "Users can manage their own patients"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+-- Policy: Permitir inserção pública (necessário para agendamento público)
+DROP POLICY IF EXISTS "Allow public insert for patients" ON patients;
+CREATE POLICY "Allow public insert for patients"
+  ON patients
+  FOR INSERT
+  WITH CHECK (true);
+
 -- ==========================================
 -- 2. CRIAR TABELA SERVICES (SERVIÇOS)
 -- ==========================================
