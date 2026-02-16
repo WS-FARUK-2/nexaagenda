@@ -190,6 +190,43 @@ export default function AgendarPage() {
     }
 
     try {
+      // 1. Verificar se já existe um cliente com este email ou telefone
+      let patientId = null
+      
+      if (formData.email_cliente) {
+        const { data: existingPatient } = await supabase
+          .from('patients')
+          .select('id')
+          .eq('user_id', profile!.user_id)
+          .eq('email', formData.email_cliente)
+          .single()
+        
+        patientId = existingPatient?.id
+      }
+
+      // 2. Se não existir, criar o cliente automaticamente
+      if (!patientId) {
+        const { data: newPatient, error: patientError } = await supabase
+          .from('patients')
+          .insert([{
+            user_id: profile!.user_id,
+            name: formData.nome_cliente,
+            phone: formData.telefone_cliente,
+            email: formData.email_cliente || null
+          }])
+          .select()
+          .single()
+
+        if (patientError) {
+          console.error('Erro ao criar cliente:', patientError)
+          // Continua mesmo se não conseguir criar o cliente
+        } else {
+          patientId = newPatient?.id
+          console.log('Cliente criado automaticamente:', patientId)
+        }
+      }
+
+      // 3. Criar o agendamento público
       const { error: insertError } = await supabase
         .from('agendamentos_publicos')
         .insert([{
