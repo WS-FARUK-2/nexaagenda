@@ -167,6 +167,28 @@ export default function DashboardPage() {
             Clique para gerenciar →
           </p>
         </div>
+
+        {/* Card Configuração */}
+        <div 
+          onClick={() => router.push('/dashboard/configuracao')}
+          style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '8px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s',
+            border: '2px solid #10b981'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <h3 style={{ margin: '0 0 10px 0', color: '#10b981' }}>⚙️ Configuração</h3>
+          <p style={{ fontSize: '14px', margin: 0, color: '#6b7280' }}>Link Público</p>
+          <p style={{ margin: '5px 0 0', color: '#10b981', fontSize: '14px' }}>
+            Configure seu agendamento →
+          </p>
+        </div>
       </div>
     </div>
   )
