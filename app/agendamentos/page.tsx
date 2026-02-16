@@ -268,6 +268,34 @@ export default function AgendamentosPage() {
         border: '1px solid #ddd'
       }}>
         <h2>{editingId ? 'Editar Agendamento' : 'Novo Agendamento'}</h2>
+        
+        {/* Avisos se não há dados */}
+        {patients.length === 0 && (
+          <div style={{
+            padding: '12px',
+            marginBottom: '15px',
+            backgroundColor: '#fff3cd',
+            color: '#856404',
+            borderRadius: '4px',
+            border: '1px solid #ffeaa7'
+          }}>
+            ⚠️ Nenhum cliente cadastrado. <a href="/clientes" style={{ color: '#856404', fontWeight: 'bold', textDecoration: 'underline' }}>Clique aqui para criar</a>
+          </div>
+        )}
+
+        {services.length === 0 && (
+          <div style={{
+            padding: '12px',
+            marginBottom: '15px',
+            backgroundColor: '#fff3cd',
+            color: '#856404',
+            borderRadius: '4px',
+            border: '1px solid #ffeaa7'
+          }}>
+            ⚠️ Nenhum serviço cadastrado. <a href="/servicos" style={{ color: '#856404', fontWeight: 'bold', textDecoration: 'underline' }}>Clique aqui para criar</a>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             {/* Cliente */}
@@ -385,14 +413,14 @@ export default function AgendamentosPage() {
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || patients.length === 0 || services.length === 0}
               style={{
                 padding: '10px 20px',
-                backgroundColor: '#007bff',
+                backgroundColor: (patients.length === 0 || services.length === 0) ? '#ccc' : '#007bff',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: 'pointer',
+                cursor: (patients.length === 0 || services.length === 0) ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold'
               }}
