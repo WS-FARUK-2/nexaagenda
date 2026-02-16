@@ -6,9 +6,16 @@
 -- Objetivo: Criar todas as tabelas necessárias
 
 -- ==========================================
+-- DELETAR TABELAS ANTIGAS (se existirem)
+-- ==========================================
+DROP TABLE IF EXISTS appointments CASCADE;
+DROP TABLE IF EXISTS services CASCADE;
+DROP TABLE IF EXISTS patients CASCADE;
+
+-- ==========================================
 -- 1. CRIAR TABELA PATIENTS (CLIENTES)
 -- ==========================================
-CREATE TABLE IF NOT EXISTS patients (
+CREATE TABLE patients (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,
@@ -19,12 +26,11 @@ CREATE TABLE IF NOT EXISTS patients (
 );
 
 -- Índices para patients
-CREATE INDEX IF NOT EXISTS idx_patients_user_id ON patients(user_id);
+CREATE INDEX idx_patients_user_id ON patients(user_id);
 
 -- RLS para patients
 ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Users can manage their own patients" ON patients;
 CREATE POLICY "Users can manage their own patients"
   ON patients
   FOR ALL
@@ -34,7 +40,7 @@ CREATE POLICY "Users can manage their own patients"
 -- ==========================================
 -- 2. CRIAR TABELA SERVICES (SERVIÇOS)
 -- ==========================================
-CREATE TABLE IF NOT EXISTS services (
+CREATE TABLE services (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,
@@ -46,12 +52,11 @@ CREATE TABLE IF NOT EXISTS services (
 );
 
 -- Índices para services
-CREATE INDEX IF NOT EXISTS idx_services_user_id ON services(user_id);
+CREATE INDEX idx_services_user_id ON services(user_id);
 
 -- RLS para services
 ALTER TABLE services ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Users can manage their own services" ON services;
 CREATE POLICY "Users can manage their own services"
   ON services
   FOR ALL
@@ -61,7 +66,7 @@ CREATE POLICY "Users can manage their own services"
 -- ==========================================
 -- 3. CRIAR TABELA APPOINTMENTS (AGENDAMENTOS)
 -- ==========================================
-CREATE TABLE IF NOT EXISTS appointments (
+CREATE TABLE appointments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
@@ -75,15 +80,14 @@ CREATE TABLE IF NOT EXISTS appointments (
 );
 
 -- Índices para appointments
-CREATE INDEX IF NOT EXISTS idx_appointments_user_id ON appointments(user_id);
-CREATE INDEX IF NOT EXISTS idx_appointments_patient_id ON appointments(patient_id);
-CREATE INDEX IF NOT EXISTS idx_appointments_service_id ON appointments(service_id);
-CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
+CREATE INDEX idx_appointments_user_id ON appointments(user_id);
+CREATE INDEX idx_appointments_patient_id ON appointments(patient_id);
+CREATE INDEX idx_appointments_service_id ON appointments(service_id);
+CREATE INDEX idx_appointments_date ON appointments(appointment_date);
 
 -- RLS para appointments
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Users can manage their own appointments" ON appointments;
 CREATE POLICY "Users can manage their own appointments"
   ON appointments
   FOR ALL
@@ -94,6 +98,4 @@ CREATE POLICY "Users can manage their own appointments"
 -- VERIFICAÇÃO
 -- ==========================================
 -- Rodar após executar o script acima:
--- SELECT * FROM patients LIMIT 1;
--- SELECT * FROM services LIMIT 1;
--- SELECT * FROM appointments LIMIT 1;
+-- SELECT table_name FROM information_schema.tables WHERE table_schema='public';
