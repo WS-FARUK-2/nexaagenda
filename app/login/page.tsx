@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -176,6 +177,13 @@ export default function LoginPage() {
           >
             {loading ? 'Carregando...' : isSignUp ? 'Cadastrar' : 'Entrar'}
           </button>
+
+          {/* Depois do botão de Entrar, adicione: */}
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <Link href="/cadastro" style={{ color: '#2563eb', textDecoration: 'none' }}>
+              Não tem uma conta? Cadastre-se
+            </Link>
+          </div>
         </form>
 
         <div
