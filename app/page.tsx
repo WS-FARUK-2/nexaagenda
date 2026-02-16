@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabaseClient'
 
 export default async function Home() {
-  const { data: profiles, error } = await supabase.from('profiles').select('*')
+  const { data: profiles, error } = await supabase!.from('profiles').select('*')
   
   console.log('Dados:', profiles)
   console.log('Erro:', error)
