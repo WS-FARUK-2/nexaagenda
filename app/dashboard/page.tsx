@@ -189,6 +189,28 @@ export default function DashboardPage() {
             Configure seu agendamento →
           </p>
         </div>
+
+        {/* Card Horários */}
+        <div 
+          onClick={() => router.push('/dashboard/horarios')}
+          style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '8px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s',
+            border: '2px solid #f59e0b'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <h3 style={{ margin: '0 0 10px 0', color: '#f59e0b' }}>⏰ Horários</h3>
+          <p style={{ fontSize: '14px', margin: 0, color: '#6b7280' }}>Disponibilidade</p>
+          <p style={{ margin: '5px 0 0', color: '#f59e0b', fontSize: '14px' }}>
+            Configure seus horários →
+          </p>
+        </div>
       </div>
     </div>
   )
