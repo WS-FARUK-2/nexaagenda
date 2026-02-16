@@ -177,13 +177,6 @@ export default function LoginPage() {
           >
             {loading ? 'Carregando...' : isSignUp ? 'Cadastrar' : 'Entrar'}
           </button>
-
-          {/* Depois do botão de Entrar, adicione: */}
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <Link href="/cadastro" style={{ color: '#2563eb', textDecoration: 'none' }}>
-              Não tem uma conta? Cadastre-se
-            </Link>
-          </div>
         </form>
 
         <div
