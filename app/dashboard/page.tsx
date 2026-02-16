@@ -211,6 +211,28 @@ export default function DashboardPage() {
             Configure seus horários →
           </p>
         </div>
+
+        {/* Card Agendamentos Públicos */}
+        <div 
+          onClick={() => router.push('/dashboard/agendamentos-publicos')}
+          style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '8px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s',
+            border: '2px solid #8b5cf6'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <h3 style={{ margin: '0 0 10px 0', color: '#8b5cf6' }}>📅 Agendamentos Públicos</h3>
+          <p style={{ fontSize: '14px', margin: 0, color: '#6b7280' }}>Via Link Público</p>
+          <p style={{ margin: '5px 0 0', color: '#8b5cf6', fontSize: '14px' }}>
+            Gerenciar agendamentos →
+          </p>
+        </div>
       </div>
     </div>
   )
