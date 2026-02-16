@@ -83,6 +83,23 @@ export default function ConfiguracaoPage() {
       .trim()
   }
 
+  // Validar slug (apenas letras, números e hífens)
+  const isSlugValid = (slug: string) => {
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+    return slugRegex.test(slug)
+  }
+
+  // Sanitizar slug ao digitar manualmente
+  const sanitizeSlug = (slug: string) => {
+    return slug
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9-]/g, '') // Remove tudo exceto letras, números e hífens
+      .replace(/-+/g, '-') // Remove hífens duplicados
+      .replace(/^-+|-+$/g, '') // Remove hífens do início e fim
+  }
+
   // Atualizar slug quando nome mudar
   const handleNomeChange = (nome: string) => {
     const slug = generateSlug(nome)
@@ -115,6 +132,13 @@ export default function ConfiguracaoPage() {
 
     if (!formData.nome_profissional || !formData.slug) {
       setError('Preencha todos os campos obrigatórios')
+      setSubmitting(false)
+      return
+    }
+
+    // Validar formato do slug
+    if (!isSlugValid(formData.slug)) {
+      setError('Slug inválido. Use apenas letras minúsculas, números e hífens (ex: joao-silva)')
       setSubmitting(false)
       return
     }
@@ -315,20 +339,31 @@ export default function ConfiguracaoPage() {
             id="slug"
             type="text"
             value={formData.slug}
-            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+            onChange={(e) => {
+              const sanitized = sanitizeSlug(e.target.value)
+              setFormData({ ...formData, slug: sanitized })
+            }}
             placeholder="joao-silva"
             style={{
               width: '100%',
               padding: '12px',
-              border: '1px solid #ddd',
+              border: formData.slug && !isSlugValid(formData.slug) ? '2px solid #ef4444' : '1px solid #ddd',
               borderRadius: '4px',
               fontSize: '14px',
-              fontFamily: 'monospace'
+              fontFamily: 'monospace',
+              backgroundColor: formData.slug && !isSlugValid(formData.slug) ? '#fef2f2' : 'white'
             }}
             required
           />
-          <small style={{ color: '#666', fontSize: '12px' }}>
-            Gerado automaticamente a partir do nome. Você pode editar se desejar.
+          <small style={{ 
+            color: formData.slug && !isSlugValid(formData.slug) ? '#ef4444' : '#666', 
+            fontSize: '12px',
+            display: 'block',
+            marginTop: '5px'
+          }}>
+            {formData.slug && !isSlugValid(formData.slug) 
+              ? '❌ Slug inválido. Use apenas letras minúsculas, números e hífens (ex: joao-silva)'
+              : '✅ Use apenas letras minúsculas, números e hífens. Gerado automaticamente a partir do nome.'}
           </small>
         </div>
 
