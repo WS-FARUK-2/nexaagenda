@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import Toast from '@/components/Toast'
+import EmptyState from '@/components/EmptyState'
 
 interface Patient {
   id: string
@@ -36,6 +39,7 @@ export default function AgendamentosPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
 
   const [formData, setFormData] = useState({
     patient_id: '',
@@ -140,6 +144,7 @@ export default function AgendamentosPage() {
           .eq('id', editingId)
 
         if (updateError) throw updateError
+        setToast({ message: 'Agendamento atualizado com sucesso!', type: 'success' })
         setSuccess('Agendamento atualizado com sucesso!')
         setEditingId(null)
       } else {
@@ -158,6 +163,7 @@ export default function AgendamentosPage() {
           ])
 
         if (insertError) throw insertError
+        setToast({ message: 'Agendamento criado com sucesso!', type: 'success' })
         setSuccess('Agendamento criado com sucesso!')
       }
 
@@ -172,6 +178,7 @@ export default function AgendamentosPage() {
       loadData(user.id)
     } catch (err: any) {
       console.error('Erro:', err)
+      setToast({ message: err.message || 'Erro ao salvar agendamento', type: 'error' })
       setError(err.message || 'Erro ao salvar agendamento')
     } finally {
       setSubmitting(false)
@@ -202,9 +209,11 @@ export default function AgendamentosPage() {
 
       if (deleteError) throw deleteError
 
+      setToast({ message: 'Agendamento deletado com sucesso!', type: 'success' })
       setSuccess('Agendamento deletado com sucesso!')
       loadData(user.id)
     } catch (err: any) {
+      setToast({ message: err.message || 'Erro ao deletar agendamento', type: 'error' })
       setError(err.message || 'Erro ao deletar agendamento')
     }
   }
@@ -224,7 +233,7 @@ export default function AgendamentosPage() {
   if (loading) {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
-        <p>Carregando...</p>
+        <LoadingSpinner />
       </div>
     )
   }
@@ -452,7 +461,11 @@ export default function AgendamentosPage() {
       <div>
         <h2>Agendamentos ({appointments.length})</h2>
         {appointments.length === 0 ? (
-          <p style={{ color: '#666' }}>Nenhum agendamento cadastrado</p>
+          <EmptyState
+            icon="📅"
+            title="Nenhum agendamento"
+            description="Você ainda não criou nenhum agendamento. Use o formulário acima para criar o primeiro!"
+          />
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{
@@ -538,6 +551,13 @@ export default function AgendamentosPage() {
           </div>
         )}
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

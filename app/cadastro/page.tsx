@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Toast from '@/components/Toast'
 
 export default function CadastroPage() {
   const [email, setEmail] = useState('')
@@ -11,6 +12,7 @@ export default function CadastroPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [success, setSuccess] = useState('')
   const router = useRouter()
 
@@ -22,6 +24,7 @@ export default function CadastroPage() {
 
     // Validar se as senhas conferem
     if (password !== confirmPassword) {
+      setToast({ message: 'As senhas não conferem', type: 'error' })
       setError('As senhas não conferem')
       setLoading(false)
       return
@@ -39,17 +42,21 @@ export default function CadastroPage() {
     console.log('Resultado do cadastro:', { data, error })
 
     if (error) {
+      setToast({ message: error.message, type: 'error' })
       setError(error.message)
     } else if (data?.user) {
       // Verifica se precisa confirmar email
       if (data.user.identities && data.user.identities.length === 0) {
+        setToast({ message: 'Este email já está cadastrado. Faça login ou recupere sua senha.', type: 'error' })
         setError('Este email já está cadastrado. Faça login ou recupere sua senha.')
       } else if (data.user.confirmed_at) {
+        setToast({ message: 'Cadastro realizado com sucesso! Redirecionando...', type: 'success' })
         setSuccess('Cadastro realizado com sucesso! Redirecionando...')
         setTimeout(() => {
           router.push('/login')
         }, 2000)
       } else {
+        setToast({ message: '✅ Cadastro realizado! IMPORTANTE: Verifique seu email para confirmar o cadastro. (Verifique também a pasta de SPAM)', type: 'success' })
         setSuccess('✅ Cadastro realizado! IMPORTANTE: Verifique seu email para confirmar o cadastro. (Verifique também a pasta de SPAM)')
         // Não redireciona automaticamente para dar tempo de ler a mensagem
       }
@@ -191,6 +198,13 @@ export default function CadastroPage() {
           </Link>
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

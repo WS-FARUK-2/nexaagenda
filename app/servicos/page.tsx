@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import Toast from '@/components/Toast'
+import EmptyState from '@/components/EmptyState'
 
 type Servico = {
   id: string
@@ -21,6 +24,7 @@ export default function ServicosPage() {
     price: '',
     duration: ''
   })
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -66,10 +70,11 @@ export default function ServicosPage() {
       ])
 
     if (error) {
-      alert('Erro ao adicionar serviço: ' + error.message)
+      setToast({ message: 'Erro ao adicionar serviço: ' + error.message, type: 'error' })
     } else {
       setShowForm(false)
       setFormData({ name: '', price: '', duration: '' })
+      setToast({ message: 'Serviço cadastrado com sucesso!', type: 'success' })
       const { data: { user: currentUser } } = await supabase!.auth.getUser()
       if (currentUser) {
         const { data } = await supabase!
@@ -83,7 +88,11 @@ export default function ServicosPage() {
   }
 
   if (loading) {
-    return <div style={{ padding: '20px' }}>Carregando...</div>
+    return (
+      <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <LoadingSpinner size={50} />
+      </div>
+    )
   }
 
   return (
@@ -201,8 +210,12 @@ export default function ServicosPage() {
           <tbody>
             {servicos.length === 0 ? (
               <tr>
-                <td colSpan={4} style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
-                  Nenhum serviço cadastrado
+                <td colSpan={4} style={{ padding: '0' }}>
+                  <EmptyState
+                    icon="💼"
+                    title="Nenhum serviço cadastrado"
+                    description="Clique no botão '+ Novo Serviço' para começar"
+                  />
                 </td>
               </tr>
             ) : (
@@ -220,6 +233,15 @@ export default function ServicosPage() {
           </tbody>
         </table>
       </div>
+      
+      {/* Toast de notificação */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import Toast from '@/components/Toast';
+import EmptyState from '@/components/EmptyState';
 
 interface AgendamentoPublico {
   id: string;
@@ -28,6 +31,7 @@ export default function AgendamentosPublicos() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     checkUser();
@@ -65,7 +69,7 @@ export default function AgendamentosPublicos() {
       setAgendamentos(data || []);
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
-      alert('Erro ao carregar agendamentos públicos');
+      setToast({ message: 'Erro ao carregar agendamentos públicos', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -84,10 +88,10 @@ export default function AgendamentosPublicos() {
         agend.id === id ? { ...agend, status: newStatus } : agend
       ));
 
-      alert('Status atualizado com sucesso!');
+      setToast({ message: 'Status atualizado com sucesso!', type: 'success' });
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      alert('Erro ao atualizar status do agendamento');
+      setToast({ message: 'Erro ao atualizar status do agendamento', type: 'error' });
     }
   };
 
@@ -103,10 +107,10 @@ export default function AgendamentosPublicos() {
       if (error) throw error;
 
       setAgendamentos(agendamentos.filter(agend => agend.id !== id));
-      alert('Agendamento excluído com sucesso!');
+      setToast({ message: 'Agendamento excluído com sucesso!', type: 'success' });
     } catch (error) {
       console.error('Erro ao excluir agendamento:', error);
-      alert('Erro ao excluir agendamento');
+      setToast({ message: 'Erro ao excluir agendamento', type: 'error' });
     }
   };
 
@@ -172,7 +176,7 @@ export default function AgendamentosPublicos() {
   if (loading) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
-        <p>Carregando...</p>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -310,23 +314,13 @@ export default function AgendamentosPublicos() {
 
       {/* Lista de Agendamentos */}
       {filteredAgendamentos.length === 0 ? (
-        <div style={{
-          textAlign: 'center',
-          padding: '60px 20px',
-          backgroundColor: '#f9fafb',
-          borderRadius: '12px'
-        }}>
-          <p style={{ fontSize: '18px', color: '#666' }}>
-            {agendamentos.length === 0 
-              ? 'Nenhum agendamento público recebido ainda.'
-              : 'Nenhum agendamento encontrado com os filtros aplicados.'}
-          </p>
-          <p style={{ fontSize: '14px', color: '#999', marginTop: '10px' }}>
-            {agendamentos.length === 0 
-              ? 'Compartilhe seu link público para começar a receber agendamentos.'
-              : 'Tente ajustar os filtros de busca.'}
-          </p>
-        </div>
+        <EmptyState
+          icon="🌐"
+          title={agendamentos.length === 0 ? 'Nenhum agendamento público recebido' : 'Nenhum resultado encontrado'}
+          description={agendamentos.length === 0 
+            ? 'Compartilhe seu link público para começar a receber agendamentos online.'
+            : 'Tente ajustar os filtros de busca para encontrar agendamentos.'}
+        />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {filteredAgendamentos.map((agendamento) => (
@@ -513,6 +507,13 @@ export default function AgendamentosPublicos() {
           Mostrando <strong>{filteredAgendamentos.length}</strong> de <strong>{agendamentos.length}</strong> agendamentos
         </p>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

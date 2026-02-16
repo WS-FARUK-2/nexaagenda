@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Toast from '@/components/Toast'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +30,7 @@ export default function LoginPage() {
         
         if (error) throw error
         
-        alert('Cadastro realizado! Verifique seu email para confirmar.')
+        setToast({ message: 'Cadastro realizado! Verifique seu email para confirmar.', type: 'success' })
         setIsSignUp(false)
       } else {
         // Login
@@ -41,8 +43,7 @@ export default function LoginPage() {
         
         router.push('/dashboard')
       }
-    } catch (error: any) {
-      setError(error.message || 'Erro ao autenticar')
+    } catch (error: any) {      setToast({ message: error.message || 'Erro ao fazer login', type: 'error' })      setError(error.message || 'Erro ao autenticar')
     } finally {
       setLoading(false)
     }
@@ -185,6 +186,13 @@ export default function LoginPage() {
           </div>
         </form>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
