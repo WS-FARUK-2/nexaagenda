@@ -76,6 +76,10 @@ export default function AgendarPage() {
           .eq('user_id', profileData.user_id)
           .order('name')
 
+        console.log('Serviços encontrados:', servicesData)
+        console.log('Erro ao buscar serviços:', servicesError)
+        console.log('User ID do perfil:', profileData.user_id)
+
         if (!servicesError) {
           setServices(servicesData || [])
         }
@@ -109,7 +113,13 @@ export default function AgendarPage() {
           .eq('user_id', profile.user_id)
           .eq('dia_semana', dayOfWeek)
 
+        console.log('Data selecionada:', selectedDate)
+        console.log('Dia da semana:', dayOfWeek)
+        console.log('Horários encontrados:', horariosData)
+        console.log('Erro ao buscar horários:', horariosError)
+
         if (horariosError || !horariosData || horariosData.length === 0) {
+          console.log('Nenhum horário configurado para este dia')
           setAvailableTimes([])
           return
         }
@@ -127,14 +137,18 @@ export default function AgendarPage() {
         // Gerar horários disponíveis
         const times: string[] = []
         horariosData.forEach(horario => {
-          const inicio = horario.hora_inicio
-          const fim = horario.hora_fim
+          // Normalizar formato de hora (remover segundos se houver)
+          const inicio = horario.hora_inicio.substring(0, 5) // HH:MM
+          const fim = horario.hora_fim.substring(0, 5)
           const intervalo = horario.intervalo || 30
 
-          let currentTime = inicio
-          while (currentTime < fim) {
-            if (!horariosOcupados.includes(currentTime)) {
-              times.push(currentTime)
+          console.log('Processando horário:', { inicio, fim, intervalo })
+
+          let currentTime = inicio + ':00'
+          while (currentTime < fim + ':00') {
+            const timeWithoutSeconds = currentTime.substring(0, 5)
+            if (!horariosOcupados.includes(currentTime) && !horariosOcupados.includes(timeWithoutSeconds)) {
+              times.push(timeWithoutSeconds)
             }
             // Adicionar intervalo
             const [h, m] = currentTime.split(':').map(Number)
@@ -145,6 +159,8 @@ export default function AgendarPage() {
           }
         })
 
+        console.log('Horários gerados:', times)
+        console.log('Horários ocupados:', horariosOcupados)
         setAvailableTimes(times.sort())
       } catch (err) {
         console.error('Erro ao carregar horários:', err)

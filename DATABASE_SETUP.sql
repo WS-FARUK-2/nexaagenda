@@ -63,6 +63,13 @@ CREATE POLICY "Users can manage their own services"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+-- Policy: Qualquer pessoa pode VER serviços (para agendamento público)
+DROP POLICY IF EXISTS "Anyone can view services" ON services;
+CREATE POLICY "Anyone can view services"
+  ON services
+  FOR SELECT
+  USING (true);
+
 -- ==========================================
 -- 3. CRIAR TABELA APPOINTMENTS (AGENDAMENTOS)
 -- ==========================================
