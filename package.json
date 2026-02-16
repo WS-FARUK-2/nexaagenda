@@ -1,6 +1,6 @@
 {
   "name": "nexa-agenda",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "engines": {
     "node": "20.x"
@@ -16,9 +16,7 @@
     "@supabase/supabase-js": "^2.39.0",
     "next": "14.2.35",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
+    "react-dom": "^18.2.0",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
