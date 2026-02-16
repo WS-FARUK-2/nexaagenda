@@ -15,6 +15,6 @@ export default async function Home() {
     return <div>Erro ao conectar: {error.message}</div>
   }
   
-  // Redireciona para login se estiver tudo ok
+  // Se tudo ok, redireciona para login
   redirect('/login')
 }
