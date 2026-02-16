@@ -35,28 +35,36 @@ export default function DashboardPage() {
   const loadCounts = async (userId: string) => {
     try {
       // Buscar contagem de clientes
-      const { count: clientesCount } = await supabase
+      const { count: clientesCount, error: clientesError } = await supabase
         .from('patients')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
 
+      console.log('Contagem de clientes:', clientesCount, 'Erro:', clientesError)
+
       // Buscar contagem de serviços
-      const { count: servicosCount } = await supabase
+      const { count: servicosCount, error: servicosError } = await supabase
         .from('services')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
 
+      console.log('Contagem de serviços:', servicosCount, 'Erro:', servicosError)
+
       // Buscar contagem de agendamentos
-      const { count: agendamentosCount } = await supabase
+      const { count: agendamentosCount, error: agendamentosError } = await supabase
         .from('appointments')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
 
+      console.log('Contagem de agendamentos:', agendamentosCount, 'Erro:', agendamentosError)
+
       // Buscar contagem de agendamentos públicos
-      const { count: agendamentosPublicosCount } = await supabase
+      const { count: agendamentosPublicosCount, error: publicosError } = await supabase
         .from('agendamentos_publicos')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
+
+      console.log('Contagem de agendamentos públicos:', agendamentosPublicosCount, 'Erro:', publicosError)
 
       setCounts({
         clientes: clientesCount || 0,
@@ -111,20 +119,36 @@ export default function DashboardPage() {
         }}>
           NexaAgenda
         </h1>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#ef4444',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Sair
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={() => user && loadCounts(user.id)}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#2563eb',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            🔄 Atualizar
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Sair
+          </button>
+        </div>
       </div>
 
       {/* Boas-vindas */}
