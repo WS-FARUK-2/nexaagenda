@@ -1,16 +1,20 @@
 import { supabase } from '@/lib/supabaseClient'
+import { redirect } from 'next/navigation'
 
 export default async function Home() {
-  const { data: profiles, error } = await supabase!.from('profiles').select('*')
+  // Verifica se supabase existe
+  if (!supabase) {
+    return <div>Erro de conexão com banco de dados</div>
+  }
   
-  console.log('Dados:', profiles)
-  console.log('Erro:', error)
-
-  return (
-    <div>
-      <h1>NexaAgenda</h1>
-      <p>Conectado ao Supabase ✅</p>
-      <p>Verifique o console do navegador (F12) para ver os dados.</p>
-    </div>
-  )
+  const { data: profiles, error } = await supabase.from('profiles').select('*')
+  
+  // Se deu erro na conexão
+  if (error) {
+    console.error('Erro:', error)
+    return <div>Erro ao conectar: {error.message}</div>
+  }
+  
+  // Redireciona para login se estiver tudo ok
+  redirect('/login')
 }
