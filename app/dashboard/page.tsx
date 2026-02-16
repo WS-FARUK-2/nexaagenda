@@ -7,6 +7,12 @@ import { useRouter } from 'next/navigation'
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [counts, setCounts] = useState({
+    clientes: 0,
+    servicos: 0,
+    agendamentos: 0,
+    agendamentosPublicos: 0
+  })
   const router = useRouter()
 
   useEffect(() => {
@@ -18,12 +24,50 @@ export default function DashboardPage() {
         router.push('/login')
       } else {
         setUser(user)
+        loadCounts(user.id)
       }
       setLoading(false)
     }
     
     getUser()
   }, [router])
+
+  const loadCounts = async (userId: string) => {
+    try {
+      // Buscar contagem de clientes
+      const { count: clientesCount } = await supabase
+        .from('patients')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+
+      // Buscar contagem de serviços
+      const { count: servicosCount } = await supabase
+        .from('services')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+
+      // Buscar contagem de agendamentos
+      const { count: agendamentosCount } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+
+      // Buscar contagem de agendamentos públicos
+      const { count: agendamentosPublicosCount } = await supabase
+        .from('agendamentos_publicos')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+
+      setCounts({
+        clientes: clientesCount || 0,
+        servicos: servicosCount || 0,
+        agendamentos: agendamentosCount || 0,
+        agendamentosPublicos: agendamentosPublicosCount || 0
+      })
+    } catch (error) {
+      console.error('Erro ao carregar contadores:', error)
+    }
+  }
 
   const handleLogout = async () => {
     await supabase!.auth.signOut()
@@ -120,7 +164,7 @@ export default function DashboardPage() {
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           <h3 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Clientes</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>0</p>
+          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{counts.clientes}</p>
           <p style={{ margin: '5px 0 0', color: '#2563eb', fontSize: '14px' }}>
             Clique para gerenciar →
           </p>
@@ -141,7 +185,7 @@ export default function DashboardPage() {
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           <h3 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Serviços</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>0</p>
+          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{counts.servicos}</p>
           <p style={{ margin: '5px 0 0', color: '#2563eb', fontSize: '14px' }}>
             Clique para gerenciar →
           </p>
@@ -162,7 +206,7 @@ export default function DashboardPage() {
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           <h3 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Agendamentos</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>0</p>
+          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{counts.agendamentos}</p>
           <p style={{ margin: '5px 0 0', color: '#2563eb', fontSize: '14px' }}>
             Clique para gerenciar →
           </p>
@@ -228,7 +272,7 @@ export default function DashboardPage() {
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           <h3 style={{ margin: '0 0 10px 0', color: '#8b5cf6' }}>📅 Agendamentos Públicos</h3>
-          <p style={{ fontSize: '14px', margin: 0, color: '#6b7280' }}>Via Link Público</p>
+          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{counts.agendamentosPublicos}</p>
           <p style={{ margin: '5px 0 0', color: '#8b5cf6', fontSize: '14px' }}>
             Gerenciar agendamentos →
           </p>
