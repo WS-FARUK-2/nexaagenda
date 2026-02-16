@@ -43,7 +43,9 @@ export default function LoginPage() {
         
         router.push('/dashboard')
       }
-    } catch (error: any) {      setToast({ message: error.message || 'Erro ao fazer login', type: 'error' })      setError(error.message || 'Erro ao autenticar')
+    } catch (error: any) {
+      setToast({ message: error.message || 'Erro ao fazer login', type: 'error' })
+      setError(error.message || 'Erro ao autenticar')
     } finally {
       setLoading(false)
     }
