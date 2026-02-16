@@ -35,6 +35,7 @@ export default function ClientesPage() {
       const { data, error } = await supabase!
         .from('patients')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -72,11 +73,15 @@ export default function ClientesPage() {
       setShowForm(false)
       setFormData({ name: '', email: '', phone: '' })
       // Recarregar lista
-      const { data } = await supabase!
-        .from('patients')
-        .select('*')
-        .order('created_at', { ascending: false })
-      setClientes(data || [])
+      const { data: { user: currentUser } } = await supabase!.auth.getUser()
+      if (currentUser) {
+        const { data } = await supabase!
+          .from('patients')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false })
+        setClientes(data || [])
+      }
     }
   }
 

@@ -34,6 +34,7 @@ export default function ServicosPage() {
       const { data, error } = await supabase!
         .from('services')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -69,11 +70,15 @@ export default function ServicosPage() {
     } else {
       setShowForm(false)
       setFormData({ name: '', price: '', duration: '' })
-      const { data } = await supabase!
-        .from('services')
-        .select('*')
-        .order('created_at', { ascending: false })
-      setServicos(data || [])
+      const { data: { user: currentUser } } = await supabase!.auth.getUser()
+      if (currentUser) {
+        const { data } = await supabase!
+          .from('services')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false })
+        setServicos(data || [])
+      }
     }
   }
 
