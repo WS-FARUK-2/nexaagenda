@@ -177,34 +177,13 @@ export default function LoginPage() {
           >
             {loading ? 'Carregando...' : isSignUp ? 'Cadastrar' : 'Entrar'}
           </button>
-        </form>
 
-        <div
-          style={{
-            textAlign: 'center',
-            marginTop: '20px',
-            color: '#6b7280',
-            fontSize: '14px',
-          }}
-        >
-          {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}{' '}
-          <button
-            onClick={() => {
-              setIsSignUp(!isSignUp)
-              setError('')
-            }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#2563eb',
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              fontSize: '14px',
-            }}
-          >
-            {isSignUp ? 'Fazer login' : 'Cadastrar-se'}
-          </button>
-        </div>
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <Link href="/cadastro" style={{ color: '#2563eb', textDecoration: 'none' }}>
+              Não tem uma conta? Cadastre-se
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
   )
