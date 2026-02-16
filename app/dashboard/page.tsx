@@ -34,60 +34,29 @@ export default function DashboardPage() {
 
   const loadCounts = async (userId: string) => {
     try {
-      console.log('🔍 USER_ID USADO NA QUERY:', userId)
-      
       // Buscar contagem de clientes
-      const { count: clientesCount, error: clientesError } = await supabase
+      const { count: clientesCount } = await supabase
         .from('patients')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
-
-      console.log('Contagem de clientes:', clientesCount, 'Erro:', clientesError)
-      
-      // Verificar registros SEM filtro para debug
-      const { data: allPatients } = await supabase
-        .from('patients')
-        .select('id, user_id, name')
-      
-      console.log('📋 TODOS os clientes (sem filtro):', allPatients)
 
       // Buscar contagem de serviços
-      const { count: servicosCount, error: servicosError } = await supabase
+      const { count: servicosCount } = await supabase
         .from('services')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
 
-      console.log('Contagem de serviços:', servicosCount, 'Erro:', servicosError)
-      
-      // DEBUG: Ver TODOS os serviços sem filtro
-      const { data: allServices } = await supabase
-        .from('services')
-        .select('id, user_id, name')
-      
-      console.log('📋 TODOS os serviços (sem filtro):', allServices)
-
       // Buscar contagem de agendamentos
-      const { count: agendamentosCount, error: agendamentosError } = await supabase
+      const { count: agendamentosCount } = await supabase
         .from('appointments')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
 
-      console.log('Contagem de agendamentos:', agendamentosCount, 'Erro:', agendamentosError)
-
       // Buscar contagem de agendamentos públicos
-      const { count: agendamentosPublicosCount, error: publicosError } = await supabase
+      const { count: agendamentosPublicosCount } = await supabase
         .from('agendamentos_publicos')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
-
-      console.log('Contagem de agendamentos públicos:', agendamentosPublicosCount, 'Erro:', publicosError)
-      
-      // DEBUG: Ver TODOS os agendamentos públicos sem filtro
-      const { data: allPublicBookings } = await supabase
-        .from('agendamentos_publicos')
-        .select('id, user_id, nome_cliente')
-      
-      console.log('📋 TODOS os agendamentos públicos (sem filtro):', allPublicBookings)
 
       setCounts({
         clientes: clientesCount || 0,
@@ -142,36 +111,20 @@ export default function DashboardPage() {
         }}>
           NexaAgenda
         </h1>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            onClick={() => user && loadCounts(user.id)}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#2563eb',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            🔄 Atualizar
-          </button>
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            Sair
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          Sair
+        </button>
       </div>
 
       {/* Boas-vindas */}
