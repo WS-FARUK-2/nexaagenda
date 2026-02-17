@@ -332,18 +332,20 @@ export default function ServicosPage() {
                 }}>
                   {professionals.map((professional) => {
                     const isChecked = selectedProfessionals.includes(professional.id)
+                    const handleCheck = () => {
+                      if (isChecked) {
+                        setSelectedProfessionals(selectedProfessionals.filter((id) => id !== professional.id))
+                      } else {
+                        setSelectedProfessionals([...selectedProfessionals, professional.id])
+                      }
+                    }
                     return (
-                      <label key={professional.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <label key={professional.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                         <input
                           type="checkbox"
                           checked={isChecked}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedProfessionals([...selectedProfessionals, professional.id])
-                            } else {
-                              setSelectedProfessionals(selectedProfessionals.filter((id) => id !== professional.id))
-                            }
-                          }}
+                          onChange={handleCheck}
+                          onClick={handleCheck}
                           style={{ width: '16px', height: '16px', accentColor: '#E87A3F', cursor: 'pointer' }}
                         />
                         <span style={{ fontSize: '14px' }}>{professional.name}{!professional.active ? ' (inativo)' : ''}</span>
