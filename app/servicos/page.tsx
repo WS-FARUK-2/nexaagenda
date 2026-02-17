@@ -16,18 +16,29 @@ type Servico = {
   price: number
   duration: number
   created_at: string
+  order?: number | null
+  professionals_count?: number
+}
+
+type Professional = {
+  id: string
+  name: string
+  active: boolean
 }
 
 export default function ServicosPage() {
   const [user, setUser] = useState<any>(null)
   const [servicos, setServicos] = useState<Servico[]>([])
+  const [professionals, setProfessionals] = useState<Professional[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingServico, setEditingServico] = useState<Servico | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     duration: ''
   })
+  const [selectedProfessionals, setSelectedProfessionals] = useState<string[]>([])
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const router = useRouter()
 
@@ -46,22 +57,104 @@ export default function ServicosPage() {
 
       setUser(user)
 
-      const { data, error } = await supabase!
-        .from('services')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+      await Promise.all([
+        loadServicos(user.id),
+        loadProfessionals(user.id)
+      ])
 
-      if (error) {
-        console.error('Erro ao buscar serviços:', error)
-      } else {
-        setServicos(data || [])
-      }
       setLoading(false)
     }
 
     fetchServicos()
   }, [router])
+
+  const loadServicos = async (userId: string) => {
+    const { data, error } = await supabase!
+      .from('services')
+      .select('id, name, price, duration, created_at, "order", service_professionals(count)')
+      .eq('user_id', userId)
+      .order('order', { ascending: true })
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar serviços:', error)
+      return
+    }
+
+    const formatted = (data || []).map((service: any) => ({
+      ...service,
+      professionals_count: service.service_professionals?.[0]?.count ?? 0
+    }))
+
+    setServicos(formatted)
+  }
+
+  const loadProfessionals = async (userId: string) => {
+    const { data, error } = await supabase!
+      .from('professionals')
+      .select('id, name, active')
+      .eq('user_id', userId)
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Erro ao buscar profissionais:', error)
+      return
+    }
+
+    setProfessionals(data || [])
+  }
+
+  const handleNew = () => {
+    setShowForm(true)
+    setEditingServico(null)
+    setFormData({ name: '', price: '', duration: '' })
+    setSelectedProfessionals([])
+  }
+
+  const handleEdit = async (servico: Servico) => {
+    setShowForm(true)
+    setEditingServico(servico)
+    setFormData({
+      name: servico.name,
+      price: String(servico.price ?? ''),
+      duration: String(servico.duration ?? '')
+    })
+
+    const { data, error } = await supabase!
+      .from('service_professionals')
+      .select('professional_id')
+      .eq('service_id', servico.id)
+
+    if (error) {
+      console.error('Erro ao buscar vínculos:', error)
+      setSelectedProfessionals([])
+      return
+    }
+
+    setSelectedProfessionals((data || []).map((item) => item.professional_id))
+  }
+
+  const saveServiceProfessionals = async (serviceId: string) => {
+    const { error: deleteError } = await supabase!
+      .from('service_professionals')
+      .delete()
+      .eq('service_id', serviceId)
+
+    if (deleteError) throw deleteError
+
+    if (selectedProfessionals.length === 0) return
+
+    const rows = selectedProfessionals.map((professionalId) => ({
+      service_id: serviceId,
+      professional_id: professionalId
+    }))
+
+    const { error: insertError } = await supabase!
+      .from('service_professionals')
+      .insert(rows)
+
+    if (insertError) throw insertError
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,32 +162,64 @@ export default function ServicosPage() {
     const { data: { user } } = await supabase!.auth.getUser()
     if (!user) return
 
-    const { error } = await supabase!
-      .from('services')
-      .insert([
-        {
-          name: formData.name,
-          price: parseFloat(formData.price),
-          duration: parseInt(formData.duration),
-          user_id: user.id
-        }
-      ])
+    const payload = {
+      name: formData.name,
+      price: parseFloat(formData.price),
+      duration: parseInt(formData.duration),
+      user_id: user.id,
+      order: editingServico?.order ?? 0
+    }
 
-    if (error) {
-      setToast({ message: 'Erro ao adicionar serviço: ' + error.message, type: 'error' })
-    } else {
-      setShowForm(false)
-      setFormData({ name: '', price: '', duration: '' })
-      setToast({ message: 'Serviço cadastrado com sucesso!', type: 'success' })
-      const { data: { user: currentUser } } = await supabase!.auth.getUser()
-      if (currentUser) {
-        const { data } = await supabase!
-          .from('services')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false })
-        setServicos(data || [])
+    if (editingServico) {
+      const { error } = await supabase!
+        .from('services')
+        .update(payload)
+        .eq('id', editingServico.id)
+
+      if (error) {
+        setToast({ message: 'Erro ao atualizar serviço: ' + error.message, type: 'error' })
+        return
       }
+
+      try {
+        await saveServiceProfessionals(editingServico.id)
+      } catch (error: any) {
+        setToast({ message: 'Erro ao salvar profissionais: ' + error.message, type: 'error' })
+        return
+      }
+
+      setToast({ message: 'Serviço atualizado com sucesso!', type: 'success' })
+    } else {
+      const { data, error } = await supabase!
+        .from('services')
+        .insert([payload])
+        .select('id')
+        .single()
+
+      if (error) {
+        setToast({ message: 'Erro ao adicionar serviço: ' + error.message, type: 'error' })
+        return
+      }
+
+      if (data?.id) {
+        try {
+          await saveServiceProfessionals(data.id)
+        } catch (error: any) {
+          setToast({ message: 'Erro ao salvar profissionais: ' + error.message, type: 'error' })
+          return
+        }
+      }
+
+      setToast({ message: 'Serviço cadastrado com sucesso!', type: 'success' })
+    }
+
+    setShowForm(false)
+    setEditingServico(null)
+    setFormData({ name: '', price: '', duration: '' })
+    setSelectedProfessionals([])
+    const { data: { user: currentUser } } = await supabase!.auth.getUser()
+    if (currentUser) {
+      await loadServicos(currentUser.id)
     }
   }
 
@@ -122,7 +247,7 @@ export default function ServicosPage() {
       }}>
         <h1>Serviços</h1>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => (showForm ? setShowForm(false) : handleNew())}
           style={{
             padding: '10px 20px',
             backgroundColor: '#2563eb',
@@ -144,7 +269,7 @@ export default function ServicosPage() {
           marginBottom: '30px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
-          <h2 style={{ marginBottom: '20px' }}>Adicionar Serviço</h2>
+          <h2 style={{ marginBottom: '20px' }}>{editingServico ? 'Editar Serviço' : 'Adicionar Serviço'}</h2>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '5px' }}>Nome</label>
@@ -192,6 +317,41 @@ export default function ServicosPage() {
                 required
               />
             </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '8px' }}>Profissionais</label>
+              {professionals.length === 0 ? (
+                <div style={{ color: '#6b7280', fontSize: '14px' }}>Nenhum profissional cadastrado</div>
+              ) : (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '10px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
+                  padding: '12px'
+                }}>
+                  {professionals.map((professional) => {
+                    const isChecked = selectedProfessionals.includes(professional.id)
+                    return (
+                      <label key={professional.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedProfessionals([...selectedProfessionals, professional.id])
+                            } else {
+                              setSelectedProfessionals(selectedProfessionals.filter((id) => id !== professional.id))
+                            }
+                          }}
+                        />
+                        <span style={{ fontSize: '14px' }}>{professional.name}{!professional.active ? ' (inativo)' : ''}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
             <button
               type="submit"
               style={{
@@ -221,13 +381,15 @@ export default function ServicosPage() {
               <th style={{ padding: '12px', textAlign: 'left' }}>Nome</th>
               <th style={{ padding: '12px', textAlign: 'left' }}>Preço</th>
               <th style={{ padding: '12px', textAlign: 'left' }}>Duração</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Profissionais</th>
               <th style={{ padding: '12px', textAlign: 'left' }}>Cadastro</th>
+              <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {servicos.length === 0 ? (
               <tr>
-                <td colSpan={4} style={{ padding: '0' }}>
+                <td colSpan={6} style={{ padding: '0' }}>
                   <EmptyState
                     icon="💼"
                     title="Nenhum serviço cadastrado"
@@ -241,8 +403,25 @@ export default function ServicosPage() {
                   <td style={{ padding: '12px' }}>{servico.name}</td>
                   <td style={{ padding: '12px', fontWeight: '600', color: '#059669' }}>{formatCurrency(servico.price)}</td>
                   <td style={{ padding: '12px' }}>{servico.duration} min</td>
+                  <td style={{ padding: '12px' }}>{servico.professionals_count ?? 0}</td>
                   <td style={{ padding: '12px' }}>
                     {new Date(servico.created_at).toLocaleDateString('pt-BR')}
+                  </td>
+                  <td style={{ padding: '12px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => handleEdit(servico)}
+                      style={{
+                        padding: '6px 10px',
+                        backgroundColor: '#E87A3F',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Editar
+                    </button>
                   </td>
                 </tr>
               ))
