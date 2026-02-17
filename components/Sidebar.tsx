@@ -35,7 +35,7 @@ export default function Sidebar({ user }: { user: any }) {
     { id: 'perfil', label: 'Perfil', icon: '👤', href: '/dashboard/perfil', section: 'main', roles: ['admin', 'professional'] },
     { id: 'link-agendamento', label: 'Link de Agendamento', icon: '🔗', href: '/dashboard/configuracao', section: 'main', roles: ['admin'] },
     { id: 'agendamentos', label: 'Agendamentos', icon: '📅', href: '/agendamentos', section: 'main', roles: ['admin', 'professional'] },
-    { id: 'profissionais', label: 'Profissionais', icon: '👥', href: '/clientes', section: 'main', roles: ['admin'] },
+    { id: 'profissionais', label: 'Profissionais', icon: '👥', href: '/dashboard/profissionais', section: 'main', roles: ['admin'] },
     { id: 'servicos', label: 'Serviços', icon: '✂️', href: '/servicos', section: 'main', roles: ['admin'] },
     { id: 'dados-empresa', label: 'Dados da Empresa', icon: '🏢', href: '/dashboard/empresa', section: 'main', roles: ['admin'] },
     { id: 'listagem-clientes', label: 'Listagem de Clientes', icon: '👫', href: '/clientes', section: 'main', roles: ['admin'] },
