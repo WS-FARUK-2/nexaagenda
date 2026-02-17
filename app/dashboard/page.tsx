@@ -18,16 +18,28 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase!.auth.getUser()
-      
-      if (!user) {
-        // Se não estiver logado, redireciona para login
-        router.push('/login')
-      } else {
-        setUser(user)
-        loadCounts(user.id)
+      try {
+        const { data: { user } } = await supabase!.auth.getUser()
+        
+        if (!user) {
+          // Se não estiver logado, redireciona para login
+          router.push('/login')
+        } else {
+          setUser(user)
+          // Carregar contadores com timeout
+          const timeoutId = setTimeout(() => {
+            // Se não carregar em 5 segundos, parar o loading mesmo assim
+            setLoading(false)
+          }, 5000)
+          
+          await loadCounts(user.id)
+          clearTimeout(timeoutId)
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     
     getUser()
@@ -35,38 +47,43 @@ export default function DashboardPage() {
 
   const loadCounts = async (userId: string) => {
     try {
-      // Buscar contagem de clientes
-      const { count: clientesCount } = await supabase
-        .from('patients')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-
-      // Buscar contagem de serviços
-      const { count: servicosCount } = await supabase
-        .from('services')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-
-      // Buscar contagem de agendamentos
-      const { count: agendamentosCount } = await supabase
-        .from('appointments')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-
-      // Buscar contagem de agendamentos públicos
-      const { count: agendamentosPublicosCount } = await supabase
-        .from('agendamentos_publicos')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
+      // Fazer todas as queries em paralelo com timeout
+      const [clientesRes, servicosRes, agendamentosRes, agendamentosPublicosRes] = await Promise.all([
+        supabase
+          .from('patients')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .then(res => res.count || 0)
+          .catch(() => 0),
+        supabase
+          .from('services')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .then(res => res.count || 0)
+          .catch(() => 0),
+        supabase
+          .from('appointments')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .then(res => res.count || 0)
+          .catch(() => 0),
+        supabase
+          .from('agendamentos_publicos')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .then(res => res.count || 0)
+          .catch(() => 0)
+      ])
 
       setCounts({
-        clientes: clientesCount || 0,
-        servicos: servicosCount || 0,
-        agendamentos: agendamentosCount || 0,
-        agendamentosPublicos: agendamentosPublicosCount || 0
+        clientes: clientesRes || 0,
+        servicos: servicosRes || 0,
+        agendamentos: agendamentosRes || 0,
+        agendamentosPublicos: agendamentosPublicosRes || 0
       })
     } catch (error) {
       console.error('Erro ao carregar contadores:', error)
+      // Manter os valores padrão se houver erro
     }
   }
 

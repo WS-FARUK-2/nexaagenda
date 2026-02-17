@@ -41,7 +41,10 @@ export default function LoginPage() {
         
         if (error) throw error
         
-        router.push('/dashboard')
+        // Aguardar um pouco antes de redirecionar para garantir que a sessão está pronta
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 500)
       }
     } catch (error: any) {
       setToast({ message: error.message || 'Erro ao fazer login', type: 'error' })
