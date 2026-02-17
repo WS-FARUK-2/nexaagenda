@@ -7,10 +7,12 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
 import ConfirmModal from '@/components/ConfirmModal'
+import { generateWhatsAppURL, generateAppointmentReminder } from '@/lib/whatsapp'
 
 interface Patient {
   id: string
   name: string
+  phone?: string
 }
 
 interface Service {
@@ -576,6 +578,39 @@ export default function AgendamentosPage() {
                       >
                         Deletar
                       </button>
+                      <a
+                        href={generateWhatsAppURL(
+                          apt.patient?.phone || '',
+                          generateAppointmentReminder(
+                            apt.patient?.name || 'Cliente',
+                            apt.service?.name || 'Serviço',
+                            apt.appointment_date,
+                            apt.appointment_time,
+                            'você'
+                          )
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          padding: '6px 12px',
+                          backgroundColor: '#25d366',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          textDecoration: 'none',
+                          display: 'inline-block'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#1da852'
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = '#25d366'
+                        }}
+                      >
+                        💬 WhatsApp
+                      </a>
                     </td>
                   </tr>
                 ))}

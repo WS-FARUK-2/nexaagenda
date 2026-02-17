@@ -8,6 +8,7 @@ import Toast from '@/components/Toast';
 import EmptyState from '@/components/EmptyState';
 import ConfirmModal from '@/components/ConfirmModal';
 import { formatCurrency } from '@/lib/utils';
+import { generateWhatsAppURL, generateAppointmentReminder } from '@/lib/whatsapp';
 
 interface AgendamentoPublico {
   id: string;
@@ -462,6 +463,40 @@ export default function AgendamentosPublicos() {
                     >
                       Excluir
                     </button>
+                    <a
+                      href={generateWhatsAppURL(
+                        agendamento.telefone_cliente,
+                        generateAppointmentReminder(
+                          agendamento.nome_cliente,
+                          agendamento.services?.name || 'Serviço',
+                          agendamento.data_agendamento,
+                          agendamento.hora_agendamento,
+                          'você'
+                        )
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '8px 14px',
+                        backgroundColor: '#25d366',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        textDecoration: 'none',
+                        display: 'inline-block'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = '#1da852'
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = '#25d366'
+                      }}
+                    >
+                      💬 WhatsApp
+                    </a>
                   </div>
                 </div>
               </div>
