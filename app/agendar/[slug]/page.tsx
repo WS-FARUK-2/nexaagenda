@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useParams } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
+import { getCache, setCache } from '@/lib/cache'
 
 interface Service {
   id: string
@@ -51,10 +52,21 @@ export default function AgendarPage() {
     observacoes: ''
   })
 
-  // Carregar perfil e serviços
+  // Carregar perfil e serviços com cache
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Tentar cache primeiro
+        const cachedProfile = getCache(`profile_${slug}`)
+        const cachedServices = getCache(`services_${slug}`)
+
+        if (cachedProfile && cachedServices) {
+          setProfile(cachedProfile)
+          setServices(cachedServices)
+          setLoading(false)
+          return
+        }
+
         // Buscar perfil pelo slug
         const { data: profileData, error: profileError } = await supabase
           .from('profiles_public')
@@ -70,6 +82,8 @@ export default function AgendarPage() {
         }
 
         setProfile(profileData)
+        // Cache perfil por 1 hora
+        setCache(`profile_${slug}`, profileData, { expiresIn: 3600 })
 
         // Buscar serviços do profissional
         const { data: servicesData, error: servicesError } = await supabase
@@ -78,12 +92,10 @@ export default function AgendarPage() {
           .eq('user_id', profileData.user_id)
           .order('name')
 
-        console.log('Serviços encontrados:', servicesData)
-        console.log('Erro ao buscar serviços:', servicesError)
-        console.log('User ID do perfil:', profileData.user_id)
-
         if (!servicesError) {
           setServices(servicesData || [])
+          // Cache serviços por 1 hora
+          setCache(`services_${slug}`, servicesData, { expiresIn: 3600 })
         }
 
         setLoading(false)

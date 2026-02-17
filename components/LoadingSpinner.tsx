@@ -1,18 +1,18 @@
 export default function LoadingSpinner({ size = 40 }: { size?: number }) {
   return (
     <div style={{
-      display: 'flex',
+      display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px'
+      padding: '10px'
     }}>
       <div style={{
         width: `${size}px`,
         height: `${size}px`,
-        border: '4px solid #e5e7eb',
-        borderTop: '4px solid #2563eb',
+        border: `3px solid rgba(37, 99, 235, 0.2)`,
+        borderTop: `3px solid #2563eb`,
         borderRadius: '50%',
-        animation: 'spin 1s linear infinite'
+        animation: 'spin 0.8s linear infinite'
       }} />
       <style jsx>{`
         @keyframes spin {

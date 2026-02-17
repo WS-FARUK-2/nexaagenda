@@ -1,0 +1,75 @@
+/* Otimizações CSS para mobile */
+
+/* Viewport otimizado */
+@supports (scrollbar-width: none) {
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 4px;
+    }
+}
+
+/* Melhorar performance de scroll */
+html {
+    scroll-behavior: auto;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Otimizar inputs para mobile */
+input,
+textarea,
+select {
+    -webkit-appearance: none;
+    appearance: none;
+    font-size: 16px; /* Previne zoom ao focar em iOS */
+}
+
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Otimizar imagens */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Reduzir repaints e reflows */
+* {
+    box-sizing: border-box;
+}
+
+/* Lazy loading via CSS */
+img[loading="lazy"] {
+    background-color: #f0f0f0;
+}
+
+/* Otimizar animações */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
