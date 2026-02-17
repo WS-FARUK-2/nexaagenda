@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import Sidebar from '@/components/Sidebar'
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
@@ -114,60 +115,21 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        fontFamily: 'Arial',
-        flexDirection: 'column',
-        gap: '16px'
-      }}>
-        <LoadingSpinner size={50} />
-        <p style={{ color: '#6b7280', fontSize: '14px' }}>Carregando...</p>
+      <div style={{ display: 'flex', height: '100vh' }}>
+        <Sidebar user={user} />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <LoadingSpinner />
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{
-      padding: '20px',
-      maxWidth: '1200px',
-      margin: '0 auto',
-      fontFamily: 'Arial'
-    }}>
-      {/* Cabeçalho */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '30px',
-        paddingBottom: '20px',
-        borderBottom: '1px solid #e5e7eb'
-      }}>
-        <h1 style={{ 
-          color: '#2563eb',
-          fontSize: '24px',
-          margin: 0
-        }}>
-          NexaAgenda
-        </h1>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#ef4444',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Sair
-        </button>
-      </div>
-
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+      <Sidebar user={user} />
+      
+      <div style={{ flex: 1, padding: '20px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial' }}>
       {/* Boas-vindas */}
       <div style={{
         backgroundColor: 'white',
@@ -341,6 +303,9 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+        </div>
+      </div>
     </div>
   )
 }
+
