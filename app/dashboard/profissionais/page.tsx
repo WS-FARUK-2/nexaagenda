@@ -349,12 +349,20 @@ function ProfessionalForm({ user, professional, onClose }: {
     setSaving(true)
 
     try {
+      // Preparar dados - converter strings vazias em null
+      const dataToSave = {
+        ...formData,
+        birth_date: formData.birth_date || null,
+        email: formData.email || null,
+        phone: formData.phone || null
+      }
+
       if (professional) {
         // Editar
         const { error } = await supabase
           .from('professionals')
           .update({
-            ...formData,
+            ...dataToSave,
             updated_at: new Date().toISOString()
           })
           .eq('id', professional.id)
@@ -367,7 +375,7 @@ function ProfessionalForm({ user, professional, onClose }: {
           .from('professionals')
           .insert([{
             user_id: user.id,
-            ...formData
+            ...dataToSave
           }])
 
         if (error) throw error
