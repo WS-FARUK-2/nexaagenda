@@ -43,7 +43,7 @@ export default function ProfissionaisPage() {
         return
       }
 
-      requireAdminRole()
+      requireAdminRole(router)
       setUser(user)
       await loadProfessionals(user.id)
     } catch (error) {
