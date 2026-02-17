@@ -344,6 +344,7 @@ export default function ServicosPage() {
                               setSelectedProfessionals(selectedProfessionals.filter((id) => id !== professional.id))
                             }
                           }}
+                          style={{ width: '16px', height: '16px', accentColor: '#E87A3F', cursor: 'pointer' }}
                         />
                         <span style={{ fontSize: '14px' }}>{professional.name}{!professional.active ? ' (inativo)' : ''}</span>
                       </label>

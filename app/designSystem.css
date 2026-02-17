@@ -181,6 +181,16 @@ select {
         box-shadow 0.2s ease;
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border-radius: 4px;
+    accent-color: var(--color-accent);
+    box-shadow: none;
+}
+
 input:focus,
 textarea:focus,
 select:focus {

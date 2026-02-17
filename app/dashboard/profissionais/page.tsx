@@ -585,7 +585,7 @@ function ProfessionalForm({ user, professional, onClose }: {
                   type="checkbox"
                   checked={formData.active}
                   onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                  style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#E87A3F' }}
                 />
                 <span style={{ fontWeight: '600' }}>Profissional ativo?</span>
               </label>

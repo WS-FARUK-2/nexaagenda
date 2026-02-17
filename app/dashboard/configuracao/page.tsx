@@ -545,7 +545,7 @@ export default function ConfiguracaoPage() {
               type="checkbox"
               checked={formData.ativo}
               onChange={(e) => setFormData({ ...formData, ativo: e.target.checked })}
-              style={{ marginRight: '8px', cursor: 'pointer' }}
+              style={{ marginRight: '8px', cursor: 'pointer', width: '16px', height: '16px', accentColor: '#E87A3F' }}
             />
             <span style={{ fontWeight: 'bold' }}>Ativar página de agendamento público</span>
           </label>
