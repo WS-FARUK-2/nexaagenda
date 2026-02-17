@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { requireAdminRole } from '@/lib/role'
 
 interface Horario {
   id: string
@@ -48,6 +49,10 @@ export default function HorariosPage() {
       if (!authUser) {
         router.push('/login')
       } else {
+        if (requireAdminRole(router)) {
+          setLoading(false)
+          return
+        }
         setUser(authUser)
         loadHorarios(authUser.id)
       }

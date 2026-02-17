@@ -7,6 +7,8 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
 import { formatCurrency } from '@/lib/utils'
+import Sidebar from '@/components/Sidebar'
+import { requireAdminRole } from '@/lib/role'
 
 type Servico = {
   id: string
@@ -17,6 +19,7 @@ type Servico = {
 }
 
 export default function ServicosPage() {
+  const [user, setUser] = useState<any>(null)
   const [servicos, setServicos] = useState<Servico[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -35,6 +38,13 @@ export default function ServicosPage() {
         router.push('/login')
         return
       }
+
+      if (requireAdminRole(router)) {
+        setLoading(false)
+        return
+      }
+
+      setUser(user)
 
       const { data, error } = await supabase!
         .from('services')
@@ -90,14 +100,20 @@ export default function ServicosPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <LoadingSpinner size={50} />
+      <div style={{ display: 'flex', minHeight: '100vh' }}>
+        <Sidebar user={user} />
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <LoadingSpinner size={50} />
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+      <Sidebar user={user} />
+      <div style={{ flex: 1, padding: '20px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -243,6 +259,8 @@ export default function ServicosPage() {
           onClose={() => setToast(null)}
         />
       )}
+        </div>
+      </div>
     </div>
   )
 }

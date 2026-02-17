@@ -26,6 +26,14 @@ export default function DashboardPage() {
           // Se não estiver logado, redireciona para login
           router.push('/login')
         } else {
+          if (typeof window !== 'undefined') {
+            const storedRole = localStorage.getItem('user_role')
+            if (storedRole === 'professional') {
+              router.push('/dashboard/profissional')
+              setLoading(false)
+              return
+            }
+          }
           setUser(user)
           // Carregar contadores com timeout
           const timeoutId = setTimeout(() => {

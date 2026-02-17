@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { requireAdminRole } from '@/lib/role'
 
 interface StatData {
   totalAgendamentos: number
@@ -37,6 +38,10 @@ export default function EstatisticasPage() {
       if (!authUser) {
         router.push('/login')
       } else {
+        if (requireAdminRole(router)) {
+          setLoading(false)
+          return
+        }
         setUser(authUser)
         loadStatistics(authUser.id)
       }

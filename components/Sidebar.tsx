@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
@@ -13,6 +13,7 @@ interface MenuItem {
   action?: () => void
   section?: string
   divider?: boolean
+  roles?: Array<'admin' | 'professional'>
 }
 
 export default function Sidebar({ user }: { user: any }) {
@@ -20,29 +21,37 @@ export default function Sidebar({ user }: { user: any }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [role, setRole] = useState<'admin' | 'professional'>('admin')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedRole = localStorage.getItem('user_role') as 'admin' | 'professional' | null
+      if (storedRole) setRole(storedRole)
+    }
+  }, [])
 
   const menuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊', href: '/dashboard', section: 'main' },
-    { id: 'perfil', label: 'Perfil', icon: '👤', href: '/dashboard/perfil', section: 'main' },
-    { id: 'link-agendamento', label: 'Link de Agendamento', icon: '🔗', href: '/dashboard/configuracao', section: 'main' },
-    { id: 'agendamentos', label: 'Agendamentos', icon: '📅', href: '/agendamentos', section: 'main' },
-    { id: 'profissionais', label: 'Profissionais', icon: '👥', href: '/clientes', section: 'main' },
-    { id: 'servicos', label: 'Serviços', icon: '✂️', href: '/servicos', section: 'main' },
-    { id: 'dados-empresa', label: 'Dados da Empresa', icon: '🏢', href: '/dashboard/empresa', section: 'main' },
-    { id: 'listagem-clientes', label: 'Listagem de Clientes', icon: '👫', href: '/clientes', section: 'main' },
-    { id: 'relatorio-financeiro', label: 'Relatório Financeiro', icon: '💰', href: '/dashboard/relatorio-financeiro', section: 'main' },
+    { id: 'dashboard', label: 'Dashboard', icon: '📊', href: role === 'professional' ? '/dashboard/profissional' : '/dashboard', section: 'main', roles: ['admin', 'professional'] },
+    { id: 'perfil', label: 'Perfil', icon: '👤', href: '/dashboard/perfil', section: 'main', roles: ['admin', 'professional'] },
+    { id: 'link-agendamento', label: 'Link de Agendamento', icon: '🔗', href: '/dashboard/configuracao', section: 'main', roles: ['admin'] },
+    { id: 'agendamentos', label: 'Agendamentos', icon: '📅', href: '/agendamentos', section: 'main', roles: ['admin', 'professional'] },
+    { id: 'profissionais', label: 'Profissionais', icon: '👥', href: '/clientes', section: 'main', roles: ['admin'] },
+    { id: 'servicos', label: 'Serviços', icon: '✂️', href: '/servicos', section: 'main', roles: ['admin'] },
+    { id: 'dados-empresa', label: 'Dados da Empresa', icon: '🏢', href: '/dashboard/empresa', section: 'main', roles: ['admin'] },
+    { id: 'listagem-clientes', label: 'Listagem de Clientes', icon: '👫', href: '/clientes', section: 'main', roles: ['admin'] },
+    { id: 'relatorio-financeiro', label: 'Relatório Financeiro', icon: '💰', href: '/dashboard/relatorio-financeiro', section: 'main', roles: ['admin'] },
     
     { id: 'divider1', divider: true, label: '', icon: '' },
     
-    { id: 'indicar-app', label: 'Indicar o App', icon: '📣', href: '/dashboard/indicar', section: 'support' },
-    { id: 'como-usar', label: 'Como Usar', icon: '📖', href: '/dashboard/guia', section: 'support' },
-    { id: 'suporte', label: 'Suporte', icon: '🆘', href: '/dashboard/suporte', section: 'support' },
-    { id: 'sobre', label: 'Sobre', icon: 'ℹ️', href: '/dashboard/sobre', section: 'support' },
-    { id: 'rede-social', label: 'Rede Social', icon: '📱', href: 'https://instagram.com', section: 'support' },
+    { id: 'indicar-app', label: 'Indicar o App', icon: '📣', href: '/dashboard/indicar', section: 'support', roles: ['admin', 'professional'] },
+    { id: 'como-usar', label: 'Como Usar', icon: '📖', href: '/dashboard/guia', section: 'support', roles: ['admin', 'professional'] },
+    { id: 'suporte', label: 'Suporte', icon: '🆘', href: '/dashboard/suporte', section: 'support', roles: ['admin', 'professional'] },
+    { id: 'sobre', label: 'Sobre', icon: 'ℹ️', href: '/dashboard/sobre', section: 'support', roles: ['admin', 'professional'] },
+    { id: 'rede-social', label: 'Rede Social', icon: '📱', href: 'https://instagram.com', section: 'support', roles: ['admin', 'professional'] },
     
     { id: 'divider2', divider: true, label: '', icon: '' },
     
-    { id: 'sair', label: 'Sair', icon: '🚪', action: handleLogout, section: 'account' },
+    { id: 'sair', label: 'Sair', icon: '🚪', action: handleLogout, section: 'account', roles: ['admin', 'professional'] },
   ]
 
   async function handleLogout() {
@@ -163,7 +172,7 @@ export default function Sidebar({ user }: { user: any }) {
             flexDirection: 'column'
           }}
         >
-          {menuItems.map((item) => {
+          {menuItems.filter(item => !item.roles || item.roles.includes(role)).map((item) => {
             if (item.divider) {
               return (
                 <div

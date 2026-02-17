@@ -7,6 +7,8 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
 import ConfirmModal from '@/components/ConfirmModal'
+import Sidebar from '@/components/Sidebar'
+import { requireAdminRole } from '@/lib/role'
 
 type Cliente = {
   id: string
@@ -17,9 +19,11 @@ type Cliente = {
 }
 
 export default function ClientesPage() {
+  const [user, setUser] = useState<any>(null)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [profileSlug, setProfileSlug] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,6 +42,23 @@ export default function ClientesPage() {
         return
       }
 
+      if (requireAdminRole(router)) {
+        setLoading(false)
+        return
+      }
+
+      setUser(user)
+
+      const { data: profileData } = await supabase!
+        .from('profiles_public')
+        .select('slug')
+        .eq('user_id', user.id)
+        .single()
+
+      if (profileData?.slug) {
+        setProfileSlug(profileData.slug)
+      }
+
       const { data, error } = await supabase!
         .from('patients')
         .select('*')
@@ -54,6 +75,27 @@ export default function ClientesPage() {
 
     fetchClientes()
   }, [router])
+
+  const getPublicLink = () => {
+    if (!profileSlug) return ''
+    if (typeof window === 'undefined') return ''
+    return `${window.location.origin}/agendar/${profileSlug}`
+  }
+
+  const handleCopyLink = async () => {
+    const link = getPublicLink()
+    if (!link) {
+      setToast({ message: 'Configure o link público em Configuração', type: 'info' })
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(link)
+      setToast({ message: 'Link copiado! Envie para o cliente.', type: 'success' })
+    } catch (error) {
+      setToast({ message: 'Não foi possível copiar o link', type: 'error' })
+    }
+  }
 
   // Adicionar cliente
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,14 +136,20 @@ export default function ClientesPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <LoadingSpinner size={50} />
+      <div style={{ display: 'flex', minHeight: '100vh' }}>
+        <Sidebar user={user} />
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <LoadingSpinner size={50} />
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+      <Sidebar user={user} />
+      <div style={{ flex: 1, padding: '20px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       {/* Cabeçalho */}
       <div style={{
         display: 'flex',
@@ -211,12 +259,13 @@ export default function ClientesPage() {
               <th style={{ padding: '12px', textAlign: 'left' }}>Email</th>
               <th style={{ padding: '12px', textAlign: 'left' }}>Telefone</th>
               <th style={{ padding: '12px', textAlign: 'left' }}>Cadastro</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Link</th>
             </tr>
           </thead>
           <tbody>
             {clientes.length === 0 ? (
               <tr>
-                <td colSpan={4} style={{ padding: '0' }}>
+                <td colSpan={5} style={{ padding: '0' }}>
                   <EmptyState
                     icon="👥"
                     title="Nenhum cliente cadastrado"
@@ -233,6 +282,25 @@ export default function ClientesPage() {
                   <td style={{ padding: '12px' }}>
                     {new Date(cliente.created_at).toLocaleDateString('pt-BR')}
                   </td>
+                  <td style={{ padding: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: profileSlug ? '#2563eb' : '#9ca3af',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: profileSlug ? 'pointer' : 'not-allowed',
+                        fontSize: '12px'
+                      }}
+                      disabled={!profileSlug}
+                      title={profileSlug ? 'Copiar link público' : 'Configure o link público'}
+                    >
+                      Copiar link
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
@@ -248,6 +316,8 @@ export default function ClientesPage() {
           onClose={() => setToast(null)}
         />
       )}
+        </div>
+      </div>
     </div>
   )
 }

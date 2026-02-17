@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { requireAdminRole } from '@/lib/role'
 import Toast from '@/components/Toast'
 
 interface ProfilePublic {
@@ -48,6 +49,10 @@ export default function ConfiguracaoPage() {
       if (!authUser) {
         router.push('/login')
       } else {
+        if (requireAdminRole(router)) {
+          setLoading(false)
+          return
+        }
         setUser(authUser)
         loadProfile(authUser.id)
       }
@@ -80,7 +85,6 @@ export default function ConfiguracaoPage() {
         setLinkGerado(`${window.location.origin}/agendar/${data.slug}`)
       }
     } catch (err) {
-      console.log('Nenhum perfil encontrado ainda')
     }
   }
 
@@ -218,6 +222,7 @@ export default function ConfiguracaoPage() {
             slug: formData.slug,
             cor_primaria: formData.cor_primaria,
             ativo: formData.ativo,
+            role: user?.user_metadata?.role || 'admin',
             updated_at: new Date().toISOString()
           })
           .eq('id', profile.id)
@@ -233,7 +238,8 @@ export default function ConfiguracaoPage() {
             nome_profissional: formData.nome_profissional,
             slug: formData.slug,
             cor_primaria: formData.cor_primaria,
-            ativo: formData.ativo
+            ativo: formData.ativo,
+            role: user?.user_metadata?.role || 'admin'
           }])
 
         if (insertError) throw insertError

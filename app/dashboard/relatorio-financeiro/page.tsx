@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { formatCurrency } from '@/lib/utils'
+import { requireAdminRole } from '@/lib/role'
 
 interface FinancialStats {
   totalReceita: number
@@ -33,6 +34,10 @@ export default function RelatorioFinanceiroPage() {
       if (!authUser) {
         router.push('/login')
       } else {
+        if (requireAdminRole(router)) {
+          setLoading(false)
+          return
+        }
         setUser(authUser)
         loadFinancialData(authUser.id)
       }

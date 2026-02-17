@@ -14,6 +14,7 @@ export default function CadastroPage() {
   const [error, setError] = useState('')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [success, setSuccess] = useState('')
+  const [role, setRole] = useState<'admin' | 'professional'>('admin')
   const router = useRouter()
 
   const handleCadastro = async (e: React.FormEvent) => {
@@ -36,15 +37,20 @@ export default function CadastroPage() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/login`,
+        data: {
+          role
+        }
       }
     })
 
-    console.log('Resultado do cadastro:', { data, error })
 
     if (error) {
       setToast({ message: error.message, type: 'error' })
       setError(error.message)
     } else if (data?.user) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user_role', role)
+      }
       // Verifica se precisa confirmar email
       if (data.user.identities && data.user.identities.length === 0) {
         setToast({ message: 'Este email já está cadastrado. Faça login ou recupere sua senha.', type: 'error' })
@@ -90,6 +96,43 @@ export default function CadastroPage() {
         </p>
         
         <form onSubmit={handleCadastro}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#374151', fontWeight: '500' }}>
+              Eu sou
+            </label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setRole('admin')}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  borderRadius: '6px',
+                  border: role === 'admin' ? '2px solid #2563eb' : '1px solid #d1d5db',
+                  backgroundColor: role === 'admin' ? '#eff6ff' : 'white',
+                  cursor: 'pointer',
+                  fontWeight: role === 'admin' ? 'bold' : 'normal'
+                }}
+              >
+                Administrador
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('professional')}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  borderRadius: '6px',
+                  border: role === 'professional' ? '2px solid #2563eb' : '1px solid #d1d5db',
+                  backgroundColor: role === 'professional' ? '#eff6ff' : 'white',
+                  cursor: 'pointer',
+                  fontWeight: role === 'professional' ? 'bold' : 'normal'
+                }}
+              >
+                Profissional
+              </button>
+            </div>
+          </div>
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '5px', color: '#374151' }}>
               Email

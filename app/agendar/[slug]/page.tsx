@@ -24,6 +24,33 @@ interface ProfilePublic {
   foto_url?: string
 }
 
+interface CompanyData {
+  nome_empresa?: string
+  telefone?: string
+  endereco?: string
+  cidade?: string
+  estado?: string
+  cep?: string
+  descricao?: string
+  website?: string
+}
+
+interface HorarioSemana {
+  dia_semana: number
+  hora_inicio: string
+  hora_fim: string
+}
+
+const diasSemanaMap = [
+  'Domingo',
+  'Segunda-Feira',
+  'Terça-Feira',
+  'Quarta-Feira',
+  'Quinta-Feira',
+  'Sexta-Feira',
+  'Sábado'
+]
+
 interface TimeSlot {
   hora: string
   disponivel: boolean
@@ -35,6 +62,8 @@ export default function AgendarPage() {
 
   const [profile, setProfile] = useState<ProfilePublic | null>(null)
   const [services, setServices] = useState<Service[]>([])
+  const [company, setCompany] = useState<CompanyData | null>(null)
+  const [horariosSemana, setHorariosSemana] = useState<HorarioSemana[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -85,6 +114,27 @@ export default function AgendarPage() {
         // Cache perfil por 1 hora
         setCache(`profile_${slug}`, profileData, { expiresIn: 3600 })
 
+        // Buscar dados da empresa (opcional)
+        const { data: companyData } = await supabase
+          .from('company_data')
+          .select('nome_empresa, telefone, endereco, cidade, estado, cep, descricao, website')
+          .eq('user_id', profileData.user_id)
+          .single()
+
+        if (companyData) {
+          setCompany(companyData)
+        }
+
+        // Buscar horários de atendimento
+        const { data: horariosData } = await supabase
+          .from('horarios_disponiveis')
+          .select('dia_semana, hora_inicio, hora_fim')
+          .eq('user_id', profileData.user_id)
+          .order('dia_semana')
+          .order('hora_inicio')
+
+        setHorariosSemana(horariosData || [])
+
         // Buscar serviços do profissional
         const { data: servicesData, error: servicesError } = await supabase
           .from('services')
@@ -127,13 +177,7 @@ export default function AgendarPage() {
           .eq('user_id', profile.user_id)
           .eq('dia_semana', dayOfWeek)
 
-        console.log('Data selecionada:', selectedDate)
-        console.log('Dia da semana:', dayOfWeek)
-        console.log('Horários encontrados:', horariosData)
-        console.log('Erro ao buscar horários:', horariosError)
-
         if (horariosError || !horariosData || horariosData.length === 0) {
-          console.log('Nenhum horário configurado para este dia')
           setAvailableTimes([])
           return
         }
@@ -167,8 +211,6 @@ export default function AgendarPage() {
           const fim = horario.hora_fim.substring(0, 5)
           const intervalo = horario.intervalo || 30
 
-          console.log('Processando horário:', { inicio, fim, intervalo })
-
           let currentTime = inicio + ':00'
           while (currentTime < fim + ':00') {
             const timeWithoutSeconds = currentTime.substring(0, 5)
@@ -184,8 +226,6 @@ export default function AgendarPage() {
           }
         })
 
-        console.log('Horários gerados:', times)
-        console.log('Horários ocupados:', horariosOcupados)
         setAvailableTimes(times.sort())
       } catch (err) {
         console.error('Erro ao carregar horários:', err)
@@ -247,7 +287,6 @@ export default function AgendarPage() {
           // Continua mesmo se não conseguir criar o cliente
         } else {
           patientId = newPatient?.id
-          console.log('Cliente criado automaticamente:', patientId)
         }
       }
 
@@ -353,65 +392,67 @@ export default function AgendarPage() {
   }
 
   const corPrimaria = profile?.cor_primaria || '#2563eb'
+  const todayStr = getMinDate()
+  const tomorrowStr = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const selectedServiceData = useMemo(
+    () => services.find(service => service.id === selectedService),
+    [services, selectedService]
+  )
 
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#f9fafb',
+      backgroundColor: '#f3f4f6',
       padding: '20px'
     }}>
       <div style={{
-        maxWidth: '800px',
+        maxWidth: '1100px',
         margin: '0 auto'
       }}>
         {/* Cabeçalho */}
         <div style={{
           backgroundColor: corPrimaria,
           color: 'white',
-          padding: '40px',
+          padding: '24px',
           borderRadius: '12px',
-          marginBottom: '30px',
-          textAlign: 'center'
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
         }}>
-          {profile?.foto_url && (
-            <div style={{
-              marginBottom: '20px',
-              display: 'flex',
-              justifyContent: 'center'
-            }}>
-              <div style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '50%',
-                overflow: 'hidden',
-                border: '4px solid white',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-              }}>
-                <img
-                  src={profile.foto_url}
-                  alt={profile.nome_profissional}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover'
-                  }}
-                />
-              </div>
-            </div>
-          )}
-          <h1 style={{ margin: '0 0 10px 0', fontSize: '32px' }}>
-            {profile?.nome_profissional}
-          </h1>
-          <p style={{ margin: 0, fontSize: '18px', opacity: 0.9 }}>
-            Agende seu horário online
-          </p>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold',
+            fontSize: '20px'
+          }}>
+            {profile?.foto_url ? (
+              <img
+                src={profile.foto_url}
+                alt={profile.nome_profissional}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              (profile?.nome_profissional || 'N')[0]
+            )}
+          </div>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '24px' }}>{profile?.nome_profissional}</h1>
+            <p style={{ margin: '4px 0 0 0', opacity: 0.9 }}>Agende seu horário online</p>
+          </div>
         </div>
 
         {/* Mensagens */}
         {error && (
           <div style={{
             padding: '12px',
-            marginBottom: '20px',
+            marginBottom: '16px',
             backgroundColor: '#fee',
             color: '#c33',
             borderRadius: '8px',
@@ -423,13 +464,13 @@ export default function AgendarPage() {
 
         {success && (
           <div style={{
-            padding: '20px',
-            marginBottom: '20px',
+            padding: '16px',
+            marginBottom: '16px',
             backgroundColor: '#d1fae5',
             color: '#065f46',
             borderRadius: '8px',
             border: '2px solid #10b981',
-            fontSize: '16px',
+            fontSize: '15px',
             fontWeight: 'bold',
             textAlign: 'center'
           }}>
@@ -437,227 +478,384 @@ export default function AgendarPage() {
           </div>
         )}
 
-        {/* Formulário */}
-        <form onSubmit={handleSubmit} style={{
-          backgroundColor: 'white',
-          padding: '30px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+        <div className="booking-layout" style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr',
+          gap: '20px'
         }}>
-          <h2 style={{ marginTop: 0, color: corPrimaria }}>Dados do Agendamento</h2>
-
-          {/* Serviço */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              Selecione o Serviço *
-            </label>
-            <select
-              value={selectedService}
-              onChange={(e) => setSelectedService(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px'
-              }}
-            >
-              <option value="">Escolha um serviço</option>
-              {services.map(service => (
-                <option key={service.id} value={service.id}>
-                  {service.name} - {formatCurrency(service.price)} ({service.duration} min)
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Data */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              Data *
-            </label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => {
-                setSelectedDate(e.target.value)
-                setSelectedTime('')
-              }}
-              min={getMinDate()}
-              required
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px'
-              }}
-            />
-          </div>
-
-          {/* Horário */}
-          {selectedDate && (
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                Horário *
-              </label>
-              {availableTimes.length === 0 ? (
-                <p style={{ color: '#dc2626' }}>
-                  Nenhum horário disponível para esta data
+          {/* Coluna principal */}
+          <div>
+            <form onSubmit={handleSubmit}>
+              {/* Serviços */}
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '10px',
+                padding: '20px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                marginBottom: '16px'
+              }}>
+                <h2 style={{ margin: '0 0 8px 0', color: corPrimaria }}>Serviços</h2>
+                <p style={{ margin: '0 0 16px 0', color: '#6b7280', fontSize: '14px' }}>
+                  Selecione abaixo qual serviço deseja realizar o agendamento
                 </p>
-              ) : (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                  gap: '10px'
-                }}>
-                  {availableTimes.map(time => (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setSelectedTime(time)}
-                      style={{
-                        padding: '12px',
-                        border: selectedTime === time ? `2px solid ${corPrimaria}` : '2px solid #e5e7eb',
-                        backgroundColor: selectedTime === time ? corPrimaria : 'white',
-                        color: selectedTime === time ? 'white' : '#374151',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: selectedTime === time ? 'bold' : 'normal'
-                      }}
-                    >
-                      {time.substring(0, 5)}
-                    </button>
-                  ))}
+
+                {services.length === 0 ? (
+                  <p style={{ color: '#9ca3af' }}>Nenhum serviço cadastrado.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {services.map(service => {
+                      const isOpen = selectedService === service.id
+                      return (
+                        <div key={service.id} style={{
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          overflow: 'hidden'
+                        }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedService(service.id)
+                              setSelectedDate('')
+                              setSelectedTime('')
+                            }}
+                            style={{
+                              width: '100%',
+                              textAlign: 'left',
+                              padding: '12px 14px',
+                              backgroundColor: isOpen ? '#f8fafc' : 'white',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              fontWeight: 600
+                            }}
+                          >
+                            <span>{service.name}</span>
+                            <span style={{ color: '#9ca3af' }}>▾</span>
+                          </button>
+
+                          {isOpen && (
+                            <div style={{ padding: '12px 14px', borderTop: '1px solid #e5e7eb' }}>
+                              <p style={{ margin: '0 0 8px 0', color: '#374151' }}>
+                                <strong>Duração:</strong> {service.duration} minutos
+                              </p>
+                              <p style={{ margin: '0 0 12px 0', color: '#374151' }}>
+                                <strong>Valor:</strong> {formatCurrency(service.price)}
+                              </p>
+
+                              <div style={{ marginBottom: '16px' }}>
+                                <p style={{ margin: '0 0 8px 0', fontWeight: 600 }}>Selecione o profissional</p>
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                  <div style={{
+                                    width: '44px',
+                                    height: '44px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    border: `2px solid ${corPrimaria}`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 'bold'
+                                  }}>
+                                    {profile?.foto_url ? (
+                                      <img
+                                        src={profile.foto_url}
+                                        alt={profile.nome_profissional}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                      />
+                                    ) : (
+                                      (profile?.nome_profissional || 'P')[0]
+                                    )}
+                                  </div>
+                                  <span>{profile?.nome_profissional}</span>
+                                </div>
+                              </div>
+
+                              <div style={{ marginBottom: '12px' }}>
+                                <p style={{ margin: '0 0 8px 0', fontWeight: 600, color: corPrimaria }}>Selecione o dia</p>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedDate(todayStr)
+                                      setSelectedTime('')
+                                    }}
+                                    style={{
+                                      padding: '8px 12px',
+                                      borderRadius: '6px',
+                                      border: '1px solid #e5e7eb',
+                                      backgroundColor: selectedDate === todayStr ? corPrimaria : 'white',
+                                      color: selectedDate === todayStr ? 'white' : '#374151',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    Hoje
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedDate(tomorrowStr)
+                                      setSelectedTime('')
+                                    }}
+                                    style={{
+                                      padding: '8px 12px',
+                                      borderRadius: '6px',
+                                      border: '1px solid #e5e7eb',
+                                      backgroundColor: selectedDate === tomorrowStr ? corPrimaria : 'white',
+                                      color: selectedDate === tomorrowStr ? 'white' : '#374151',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    Amanhã
+                                  </button>
+                                  <div style={{ flex: 1, minWidth: '160px' }}>
+                                    <input
+                                      type="date"
+                                      value={selectedDate}
+                                      onChange={(e) => {
+                                        setSelectedDate(e.target.value)
+                                        setSelectedTime('')
+                                      }}
+                                      min={getMinDate()}
+                                      style={{
+                                        width: '100%',
+                                        padding: '8px 10px',
+                                        border: '1px solid #e5e7eb',
+                                        borderRadius: '6px'
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {selectedDate && (
+                                <div style={{ marginBottom: '8px' }}>
+                                  <p style={{ margin: '0 0 8px 0', fontWeight: 600, color: corPrimaria }}>Selecione o horário</p>
+                                  {availableTimes.length === 0 ? (
+                                    <p style={{ color: '#dc2626' }}>Nenhum horário disponível para esta data</p>
+                                  ) : (
+                                    <div style={{
+                                      display: 'grid',
+                                      gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+                                      gap: '8px'
+                                    }}>
+                                      {availableTimes.map(time => (
+                                        <button
+                                          key={time}
+                                          type="button"
+                                          onClick={() => setSelectedTime(time)}
+                                          style={{
+                                            padding: '10px',
+                                            border: selectedTime === time ? `2px solid ${corPrimaria}` : '1px solid #e5e7eb',
+                                            backgroundColor: selectedTime === time ? corPrimaria : 'white',
+                                            color: selectedTime === time ? 'white' : '#374151',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '13px'
+                                          }}
+                                        >
+                                          {time.substring(0, 5)}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Dados do cliente */}
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '10px',
+                padding: '20px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                marginBottom: '16px'
+              }}>
+                <h3 style={{ margin: '0 0 12px 0', color: corPrimaria }}>Informe seus dados</h3>
+
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Nome Completo *</label>
+                  <input
+                    type="text"
+                    value={formData.nome_cliente}
+                    onChange={(e) => setFormData({ ...formData, nome_cliente: e.target.value })}
+                    placeholder="Seu nome"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px'
+                    }}
+                  />
                 </div>
+
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Telefone *</label>
+                  <input
+                    type="tel"
+                    value={formData.telefone_cliente}
+                    onChange={(e) => setFormData({ ...formData, telefone_cliente: e.target.value })}
+                    placeholder="(00) 00000-0000"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px'
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Email (opcional)</label>
+                  <input
+                    type="email"
+                    value={formData.email_cliente}
+                    onChange={(e) => setFormData({ ...formData, email_cliente: e.target.value })}
+                    placeholder="seu@email.com"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Observações (opcional)</label>
+                  <textarea
+                    value={formData.observacoes}
+                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                    placeholder="Alguma observação ou preferência?"
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                      fontFamily: 'inherit'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  backgroundColor: corPrimaria,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: submitting ? 'not-allowed' : 'pointer',
+                  opacity: submitting ? 0.7 : 1
+                }}
+              >
+                {submitting ? 'Agendando...' : 'Finalizar o agendamento'}
+              </button>
+            </form>
+          </div>
+
+          {/* Coluna lateral */}
+          <div>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '10px',
+              padding: '18px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+              marginBottom: '16px'
+            }}>
+              <h3 style={{ margin: '0 0 10px 0' }}>Contato</h3>
+              <p style={{ margin: 0, color: '#374151', fontSize: '14px' }}>
+                {company?.nome_empresa || profile?.nome_profissional}
+              </p>
+              {company?.endereco && (
+                <p style={{ margin: '6px 0 0 0', color: '#6b7280', fontSize: '14px' }}>
+                  {company.endereco}
+                  {company.cidade ? `, ${company.cidade}` : ''}
+                  {company.estado ? ` - ${company.estado}` : ''}
+                </p>
+              )}
+              {company?.telefone && (
+                <p style={{ margin: '6px 0 0 0', color: '#111827', fontSize: '14px', fontWeight: 600 }}>
+                  {company.telefone}
+                </p>
               )}
             </div>
-          )}
 
-          <hr style={{ margin: '30px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '10px',
+              padding: '18px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.08)'
+            }}>
+              <h3 style={{ margin: '0 0 10px 0' }}>Horários de atendimento</h3>
+              <div style={{ fontSize: '14px', color: '#374151' }}>
+                {horariosSemana.length === 0 ? (
+                  <p style={{ margin: 0, color: '#dc2626' }}>Fechado</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {diasSemanaMap.map((dia, index) => {
+                      const horariosDoDia = horariosSemana.filter(h => h.dia_semana === index)
+                      if (horariosDoDia.length === 0) {
+                        return (
+                          <div key={dia} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>{dia}</span>
+                            <span style={{ color: '#9ca3af' }}>Fechado</span>
+                          </div>
+                        )
+                      }
 
-          <h3 style={{ color: corPrimaria }}>Seus Dados</h3>
-
-          {/* Nome */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              Nome Completo *
-            </label>
-            <input
-              type="text"
-              value={formData.nome_cliente}
-              onChange={(e) => setFormData({ ...formData, nome_cliente: e.target.value })}
-              placeholder="Seu nome"
-              required
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px'
-              }}
-            />
+                      return (
+                        <div key={dia} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{dia}</span>
+                          <span style={{ color: '#111827' }}>
+                            {horariosDoDia
+                              .map(h => `${h.hora_inicio.substring(0, 5)} - ${h.hora_fim.substring(0, 5)}`)
+                              .join(' / ')}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Telefone */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              Telefone *
-            </label>
-            <input
-              type="tel"
-              value={formData.telefone_cliente}
-              onChange={(e) => setFormData({ ...formData, telefone_cliente: e.target.value })}
-              placeholder="(00) 00000-0000"
-              required
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px'
-              }}
-            />
-          </div>
-
-          {/* Email */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              Email (opcional)
-            </label>
-            <input
-              type="email"
-              value={formData.email_cliente}
-              onChange={(e) => setFormData({ ...formData, email_cliente: e.target.value })}
-              placeholder="seu@email.com"
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px'
-              }}
-            />
-          </div>
-
-          {/* Observações */}
-          <div style={{ marginBottom: '30px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              Observações (opcional)
-            </label>
-            <textarea
-              value={formData.observacoes}
-              onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-              placeholder="Alguma observação ou preferência?"
-              rows={3}
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontFamily: 'inherit',
-                resize: 'vertical'
-              }}
-            />
-          </div>
-
-          {/* Botão */}
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              width: '100%',
-              padding: '16px',
-              backgroundColor: corPrimaria,
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              opacity: submitting ? 0.7 : 1
-            }}
-          >
-            {submitting ? 'Agendando...' : '✓ Confirmar Agendamento'}
-          </button>
-        </form>
-
-        {/* Footer */}
         <div style={{
           textAlign: 'center',
-          marginTop: '30px',
-          padding: '20px',
+          marginTop: '24px',
+          padding: '12px',
           color: '#6b7280',
-          fontSize: '14px'
+          fontSize: '13px'
         }}>
-          <p style={{ margin: 0 }}>
-            Powered by <strong style={{ color: corPrimaria }}>NexaAgenda</strong>
-          </p>
+          Powered by <strong style={{ color: corPrimaria }}>NexaAgenda</strong>
         </div>
       </div>
+
+      <style jsx>{`
+        @media (min-width: 900px) {
+          .booking-layout {
+            grid-template-columns: 1.4fr 0.6fr;
+          }
+        }
+      `}</style>
     </div>
   )
 }

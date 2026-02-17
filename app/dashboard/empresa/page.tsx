@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Sidebar from '@/components/Sidebar'
 import Toast from '@/components/Toast'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import { requireAdminRole } from '@/lib/role'
 
 interface CompanyData {
   id: string
@@ -50,6 +51,10 @@ export default function DadosEmpresaPage() {
       if (!authUser) {
         router.push('/login')
       } else {
+        if (requireAdminRole(router)) {
+          setLoading(false)
+          return
+        }
         setUser(authUser)
         loadCompanyData(authUser.id)
       }
@@ -71,7 +76,6 @@ export default function DadosEmpresaPage() {
         setFormData(data)
       }
     } catch (error) {
-      console.log('Sem dados de empresa ainda')
     }
   }
 

@@ -8,6 +8,7 @@ import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
 import ConfirmModal from '@/components/ConfirmModal'
 import { generateWhatsAppURL, generateAppointmentReminder } from '@/lib/whatsapp'
+import Sidebar from '@/components/Sidebar'
 
 interface Patient {
   id: string
@@ -267,14 +268,20 @@ export default function AgendamentosPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <LoadingSpinner />
+      <div style={{ display: 'flex', minHeight: '100vh' }}>
+        <Sidebar user={user} />
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <LoadingSpinner />
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+      <Sidebar user={user} />
+      <div style={{ flex: 1, padding: '20px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <h1>Agendamentos</h1>
 
       {error && (
@@ -639,6 +646,8 @@ export default function AgendamentosPage() {
           onClose={() => setToast(null)}
         />
       )}
+        </div>
+      </div>
     </div>
   )
 }

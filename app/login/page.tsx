@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
+  const [role, setRole] = useState<'admin' | 'professional'>('admin')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const router = useRouter()
 
@@ -29,6 +30,10 @@ export default function LoginPage() {
         })
         
         if (error) throw error
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user_role', role)
+        }
         
         setToast({ message: 'Cadastro realizado! Verifique seu email para confirmar.', type: 'success' })
         setIsSignUp(false)
@@ -40,6 +45,16 @@ export default function LoginPage() {
         })
         
         if (error) throw error
+
+        const { data: { user } } = await supabase!.auth.getUser()
+        const metaRole = user?.user_metadata?.role as 'admin' | 'professional' | undefined
+        if (metaRole) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('user_role', metaRole)
+          }
+        } else if (typeof window !== 'undefined') {
+          localStorage.setItem('user_role', role)
+        }
         
         // Aguardar um pouco antes de redirecionar para garantir que a sessão está pronta
         setTimeout(() => {
@@ -96,6 +111,52 @@ export default function LoginPage() {
         </p>
 
         <form onSubmit={handleSubmit}>
+          {!isSignUp && (
+            <div style={{ marginBottom: '20px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  color: '#374151',
+                  fontWeight: '500',
+                }}
+              >
+                Eu sou
+              </label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setRole('admin')}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '6px',
+                    border: role === 'admin' ? '2px solid #2563eb' : '1px solid #d1d5db',
+                    backgroundColor: role === 'admin' ? '#eff6ff' : 'white',
+                    cursor: 'pointer',
+                    fontWeight: role === 'admin' ? 'bold' : 'normal'
+                  }}
+                >
+                  Administrador
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole('professional')}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '6px',
+                    border: role === 'professional' ? '2px solid #2563eb' : '1px solid #d1d5db',
+                    backgroundColor: role === 'professional' ? '#eff6ff' : 'white',
+                    cursor: 'pointer',
+                    fontWeight: role === 'professional' ? 'bold' : 'normal'
+                  }}
+                >
+                  Profissional
+                </button>
+              </div>
+            </div>
+          )}
           <div style={{ marginBottom: '20px' }}>
             <label
               style={{
