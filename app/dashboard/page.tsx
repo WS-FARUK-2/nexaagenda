@@ -48,38 +48,58 @@ export default function DashboardPage() {
   const loadCounts = async (userId: string) => {
     try {
       // Fazer todas as queries em paralelo com timeout
-      const [clientesRes, servicosRes, agendamentosRes, agendamentosPublicosRes] = await Promise.all([
-        supabase
-          .from('patients')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .then(res => res.count || 0)
-          .catch(() => 0),
-        supabase
-          .from('services')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .then(res => res.count || 0)
-          .catch(() => 0),
-        supabase
-          .from('appointments')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .then(res => res.count || 0)
-          .catch(() => 0),
-        supabase
-          .from('agendamentos_publicos')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .then(res => res.count || 0)
-          .catch(() => 0)
+      const results = await Promise.all([
+        (async () => {
+          try {
+            const { count } = await supabase
+              .from('patients')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', userId)
+            return count || 0
+          } catch {
+            return 0
+          }
+        })(),
+        (async () => {
+          try {
+            const { count } = await supabase
+              .from('services')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', userId)
+            return count || 0
+          } catch {
+            return 0
+          }
+        })(),
+        (async () => {
+          try {
+            const { count } = await supabase
+              .from('appointments')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', userId)
+            return count || 0
+          } catch {
+            return 0
+          }
+        })(),
+        (async () => {
+          try {
+            const { count } = await supabase
+              .from('agendamentos_publicos')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', userId)
+            return count || 0
+          } catch {
+            return 0
+          }
+        })()
       ])
 
       setCounts({
-        clientes: clientesRes || 0,
-        servicos: servicosRes || 0,
-        agendamentos: agendamentosRes || 0,
-        agendamentosPublicos: agendamentosPublicosRes || 0
+        clientes: results[0],
+        servicos: results[1],
+        agendamentos: results[2],
+        agendamentosPublicos: results[3]
       })
     } catch (error) {
       console.error('Erro ao carregar contadores:', error)
