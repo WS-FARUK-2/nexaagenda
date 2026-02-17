@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Toast from '@/components/Toast'
 
 interface ProfilePublic {
   id: string
@@ -12,6 +13,7 @@ interface ProfilePublic {
   nome_profissional: string
   cor_primaria: string
   ativo: boolean
+  foto_url?: string
 }
 
 export default function ConfiguracaoPage() {
@@ -22,15 +24,22 @@ export default function ConfiguracaoPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [linkGerado, setLinkGerado] = useState('')
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
 
   const [formData, setFormData] = useState({
     nome_profissional: '',
     slug: '',
     cor_primaria: '#2563eb',
-    ativo: true
+    ativo: true,
+    foto_url: ''
   })
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null)
 
   const router = useRouter()
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
+    setToast({ message, type })
+  }
 
   // Autenticação
   useEffect(() => {
@@ -62,8 +71,12 @@ export default function ConfiguracaoPage() {
           nome_profissional: data.nome_profissional,
           slug: data.slug,
           cor_primaria: data.cor_primaria,
-          ativo: data.ativo
+          ativo: data.ativo,
+          foto_url: data.foto_url || ''
         })
+        if (data.foto_url) {
+          setFotoPreview(data.foto_url)
+        }
         setLinkGerado(`${window.location.origin}/agendar/${data.slug}`)
       }
     } catch (err) {
@@ -124,6 +137,50 @@ export default function ConfiguracaoPage() {
   }
 
   // Salvar configuração
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validar se é imagem
+    if (!file.type.startsWith('image/')) {
+      showToast('Por favor, selecione uma imagem válida', 'error')
+      return
+    }
+
+    // Validar tamanho máximo (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Imagem muito grande. Máximo 5MB', 'error')
+      return
+    }
+
+    try {
+      // Converter para Base64
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const base64String = event.target?.result as string
+        setFotoPreview(base64String)
+        setFormData(prev => ({
+          ...prev,
+          foto_url: base64String
+        }))
+        showToast('Imagem carregada com sucesso', 'success')
+      }
+      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error('Erro ao processar imagem:', error)
+      showToast('Erro ao processar imagem', 'error')
+    }
+  }
+
+  const handleRemovePhoto = () => {
+    setFotoPreview(null)
+    setFormData(prev => ({
+      ...prev,
+      foto_url: ''
+    }))
+    showToast('Foto removida', 'info')
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
@@ -406,6 +463,75 @@ export default function ConfiguracaoPage() {
           </div>
         </div>
 
+        {/* Foto do Profissional */}
+        <div style={{ marginBottom: '30px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+            Foto do Profissional
+          </label>
+          
+          {fotoPreview && (
+            <div style={{
+              marginBottom: '15px',
+              backgroundColor: '#f0f9ff',
+              padding: '15px',
+              borderRadius: '8px',
+              border: '1px solid #93c5fd'
+            }}>
+              <p style={{ marginTop: 0, fontSize: '14px', fontWeight: 'bold' }}>Preview:</p>
+              <div style={{
+                width: '100%',
+                maxWidth: '200px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: '2px solid #ddd',
+                marginBottom: '10px'
+              }}>
+                <img
+                  src={fotoPreview}
+                  alt="Preview"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block'
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleRemovePhoto}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Remover Foto
+              </button>
+            </div>
+          )}
+          
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            style={{
+              width: '100%',
+              padding: '12px',
+              border: '2px dashed #ddd',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              backgroundColor: '#fafafa'
+            }}
+          />
+          <small style={{ color: '#666', fontSize: '12px', display: 'block', marginTop: '5px' }}>
+            Formatos aceitos: JPG, PNG, GIF. Máximo 5MB. A foto será exibida na página pública de agendamento.
+          </small>
+        </div>
+
         {/* Ativo */}
         <div style={{ marginBottom: '30px' }}>
           <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
@@ -441,6 +567,15 @@ export default function ConfiguracaoPage() {
           {submitting ? 'Salvando...' : profile ? 'Atualizar Configuração' : 'Criar Configuração'}
         </button>
       </form>
+
+      {/* Toast de notificação */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

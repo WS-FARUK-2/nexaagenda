@@ -20,6 +20,7 @@ interface ProfilePublic {
   nome_profissional: string
   cor_primaria: string
   ativo: boolean
+  foto_url?: string
 }
 
 interface TimeSlot {
@@ -360,6 +361,32 @@ export default function AgendarPage() {
           marginBottom: '30px',
           textAlign: 'center'
         }}>
+          {profile?.foto_url && (
+            <div style={{
+              marginBottom: '20px',
+              display: 'flex',
+              justifyContent: 'center'
+            }}>
+              <div style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '4px solid white',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+              }}>
+                <img
+                  src={profile.foto_url}
+                  alt={profile.nome_profissional}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              </div>
+            </div>
+          )}
           <h1 style={{ margin: '0 0 10px 0', fontSize: '32px' }}>
             {profile?.nome_profissional}
           </h1>
