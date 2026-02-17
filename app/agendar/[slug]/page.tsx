@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useParams } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
@@ -85,6 +85,11 @@ export default function AgendarPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        if (!supabase) {
+          setError('Configuração do sistema ausente. Tente novamente mais tarde.')
+          setLoading(false)
+          return
+        }
         // Tentar cache primeiro
         const cachedProfile = getCache(`profile_${slug}`)
         const cachedServices = getCache(`services_${slug}`)
@@ -164,7 +169,7 @@ export default function AgendarPage() {
   // Gerar horários disponíveis quando data for selecionada
   useEffect(() => {
     const loadAvailableTimes = async () => {
-      if (!selectedDate || !profile) return
+      if (!selectedDate || !profile || !supabase) return
 
       try {
         const date = new Date(selectedDate + 'T00:00:00')
@@ -241,6 +246,12 @@ export default function AgendarPage() {
     setSubmitting(true)
     setError('')
     setSuccess('')
+
+    if (!supabase) {
+      setError('Configuração do sistema ausente. Tente novamente mais tarde.')
+      setSubmitting(false)
+      return
+    }
 
     if (!selectedService || !selectedDate || !selectedTime) {
       setError('Selecione serviço, data e horário')
@@ -360,6 +371,9 @@ export default function AgendarPage() {
     return today.toISOString().split('T')[0]
   }
 
+  const corPrimaria = profile?.cor_primaria || '#2563eb'
+  const todayStr = getMinDate()
+  const tomorrowStr = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   if (loading) {
     return (
       <div style={{
@@ -390,14 +404,6 @@ export default function AgendarPage() {
       </div>
     )
   }
-
-  const corPrimaria = profile?.cor_primaria || '#2563eb'
-  const todayStr = getMinDate()
-  const tomorrowStr = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const selectedServiceData = useMemo(
-    () => services.find(service => service.id === selectedService),
-    [services, selectedService]
-  )
 
   return (
     <div style={{
