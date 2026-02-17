@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
+import { formatCurrency } from '@/lib/utils'
 
 type Servico = {
   id: string
@@ -222,7 +223,7 @@ export default function ServicosPage() {
               servicos.map((servico) => (
                 <tr key={servico.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <td style={{ padding: '12px' }}>{servico.name}</td>
-                  <td style={{ padding: '12px' }}>R$ {servico.price.toFixed(2)}</td>
+                  <td style={{ padding: '12px', fontWeight: '600', color: '#059669' }}>{formatCurrency(servico.price)}</td>
                   <td style={{ padding: '12px' }}>{servico.duration} min</td>
                   <td style={{ padding: '12px' }}>
                     {new Date(servico.created_at).toLocaleDateString('pt-BR')}

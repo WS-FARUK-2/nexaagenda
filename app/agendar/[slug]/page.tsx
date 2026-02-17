@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useParams } from 'next/navigation'
+import { formatCurrency } from '@/lib/utils'
 
 interface Service {
   id: string
@@ -426,7 +427,7 @@ export default function AgendarPage() {
               <option value="">Escolha um serviço</option>
               {services.map(service => (
                 <option key={service.id} value={service.id}>
-                  {service.name} - R$ {service.price.toFixed(2)} ({service.duration} min)
+                  {service.name} - {formatCurrency(service.price)} ({service.duration} min)
                 </option>
               ))}
             </select>

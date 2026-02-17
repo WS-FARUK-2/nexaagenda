@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import Toast from '@/components/Toast';
 import EmptyState from '@/components/EmptyState';
 import ConfirmModal from '@/components/ConfirmModal';
+import { formatCurrency } from '@/lib/utils';
 
 interface AgendamentoPublico {
   id: string;
@@ -366,8 +367,8 @@ export default function AgendamentosPublicos() {
                     {agendamento.services?.name || 'Serviço não encontrado'}
                   </div>
                   {agendamento.services && (
-                    <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-                      💰 R$ {agendamento.services.price.toFixed(2)} • ⏱️ {agendamento.services.duration} min
+                    <div style={{ fontSize: '14px', color: '#059669', fontWeight: '600', marginBottom: '8px' }}>
+                      💰 {formatCurrency(agendamento.services.price)} • ⏱️ {agendamento.services.duration} min
                     </div>
                   )}
                   <div style={{ fontSize: '14px', color: '#666' }}>
