@@ -281,6 +281,28 @@ export default function DashboardPage() {
             Gerenciar agendamentos →
           </p>
         </div>
+
+        {/* Card Estatísticas */}
+        <div 
+          onClick={() => router.push('/dashboard/estatisticas')}
+          style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '8px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s',
+            border: '2px solid #ec4899'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <h3 style={{ margin: '0 0 10px 0', color: '#ec4899' }}>📊 Estatísticas</h3>
+          <p style={{ fontSize: '14px', margin: 0, color: '#6b7280' }}>Desempenho</p>
+          <p style={{ margin: '5px 0 0', color: '#ec4899', fontSize: '14px' }}>
+            Ver relatório detalhado →
+          </p>
+        </div>
       </div>
     </div>
   )
