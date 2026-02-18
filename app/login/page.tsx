@@ -40,23 +40,27 @@ export default function LoginPage() {
         setIsSignUp(false)
       } else {
         // Login
-        const { error } = await supabase!.auth.signInWithPassword({
+        const { data, error } = await supabase!.auth.signInWithPassword({
           email,
           password,
         })
         
-        if (error) throw error
+        if (error) {
+          console.error('Auth error:', error)
+          throw error
+        }
 
-        const { data: { user } } = await supabase!.auth.getUser()
-        const metaRole = user?.user_metadata?.role as 'admin' | 'professional' | undefined
-        if (metaRole) {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('user_role', metaRole)
-            sessionStorage.setItem('user_role', metaRole)
+        if (data?.user) {
+          const metaRole = data.user.user_metadata?.role as 'admin' | 'professional' | undefined
+          if (metaRole) {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('user_role', metaRole)
+              sessionStorage.setItem('user_role', metaRole)
+            }
+          } else if (typeof window !== 'undefined') {
+            localStorage.setItem('user_role', role)
+            sessionStorage.setItem('user_role', role)
           }
-        } else if (typeof window !== 'undefined') {
-          localStorage.setItem('user_role', role)
-          sessionStorage.setItem('user_role', role)
         }
         
         // Aguardar um pouco antes de redirecionar para garantir que a sessão está pronta
