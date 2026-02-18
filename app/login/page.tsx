@@ -62,63 +62,16 @@ export default function LoginPage() {
 
         if (data?.user) {
           console.log('Login bem-sucedido, usuário:', data.user.email)
-          const metaRole = data.user.user_metadata?.role as 'admin' | 'professional' | undefined
           
-          // Verificar quantos perfis o usuário tem
-          let hasAdminRole = false
-          let hasProfessionalRole = false
-          
-          try {
-            const { data: empresas } = await supabase!
-              .from('empresas')
-              .select('id')
-              .eq('user_id', data.user.id)
-              .limit(1)
-            hasAdminRole = !!(empresas && empresas.length > 0)
-          } catch (error) {
-            console.error('Erro ao verificar admin:', error)
-          }
-          
-          try {
-            const { data: professionals } = await supabase!
-              .from('profissionais')
-              .select('id')
-              .eq('user_id', data.user.id)
-              .limit(1)
-            hasProfessionalRole = !!(professionals && professionals.length > 0)
-          } catch (error) {
-            console.error('Erro ao verificar professional:', error)
-          }
-          
-          // Se tem múltiplos perfis, redirecionar para seleção
-          const profileCount = (hasAdminRole ? 1 : 0) + (hasProfessionalRole ? 1 : 0)
-          if (profileCount > 1) {
-            console.log('Múltiplos perfis encontrados, redirecionando para seleção...')
-            setTimeout(() => {
-              router.push('/selecionar-perfil')
-            }, 300)
-            return
-          }
-          
-          // Se tem apenas um perfil ou nenhum, usar esse
-          if (hasProfessionalRole) {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('user_role', 'professional')
-              sessionStorage.setItem('user_role', 'professional')
-            }
-          } else {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('user_role', 'admin')
-              sessionStorage.setItem('user_role', 'admin')
-            }
-          }
+          // SEMPRE redirecionar para seleção de perfil após login
+          // A página de seleção de perfil vai verificar quantos perfis tem
+          // e redirecionar automaticamente se tiver apenas um
+          console.log('Redirecionando para seleção de perfil...')
+          setTimeout(() => {
+            router.push('/selecionar-perfil')
+          }, 300)
+          return
         }
-        
-        console.log('Redirecionando para dashboard...')
-        // Aguardar um pouco antes de redirecionar para garantir que a sessão está pronta
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 500)
       }
     } catch (error: any) {
       console.error("Erro de autenticação:", error)
