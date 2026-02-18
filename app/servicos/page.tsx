@@ -379,6 +379,7 @@ export default function ServicosPage() {
                 }}>
                   {professionals.map((professional) => {
                     const isChecked = selectedProfessionals.includes(professional.id)
+                    console.log(`Renderizando checkbox: ${professional.name}, ID: ${professional.id}, isChecked: ${isChecked}, selectedProfessionals:`, selectedProfessionals)
                     return (
                       <label key={professional.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                         <input
