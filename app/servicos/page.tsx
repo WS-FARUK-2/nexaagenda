@@ -112,30 +112,21 @@ export default function ServicosPage() {
   }
 
   const handleEdit = async (servico: Servico) => {
-    console.log('=== EDITANDO SERVIÇO ===')
-    console.log('Serviço:', servico)
-    
-    // Primeiro, buscar os profissionais vinculados
-    console.log('Buscando profissionais vinculados ao serviço:', servico.id)
-    
+    // Buscar os profissionais vinculados
     const { data, error } = await supabase!
       .from('service_professionals')
       .select('professional_id')
       .eq('service_id', servico.id)
-
-    console.log('Resultado da busca:', { data, error })
 
     if (error) {
       console.error('Erro ao buscar vínculos:', error)
       setSelectedProfessionals([])
     } else {
       const professionalIds = (data || []).map((item) => item.professional_id)
-      console.log('IDs dos profissionais carregados:', professionalIds)
       setSelectedProfessionals(professionalIds)
-      console.log('selectedProfessionals setado para:', professionalIds)
     }
 
-    // DEPOIS de carregar os profissionais, abrir o formulário
+    // Abrir o formulário com os dados carregados
     setEditingServico(servico)
     setFormData({
       name: servico.name,
@@ -146,24 +137,16 @@ export default function ServicosPage() {
   }
 
   const saveServiceProfessionals = async (serviceId: string) => {
-    console.log('=== INICIANDO saveServiceProfessionals ===')
-    console.log('Service ID:', serviceId)
-    console.log('Profissionais selecionados:', selectedProfessionals)
-    
     const { error: deleteError } = await supabase!
       .from('service_professionals')
       .delete()
       .eq('service_id', serviceId)
 
     if (deleteError) {
-      console.error('Erro ao deletar vínculos antigos:', deleteError)
       throw deleteError
     }
-    
-    console.log('Vínculos antigos deletados com sucesso')
 
     if (selectedProfessionals.length === 0) {
-      console.log('Nenhum profissional selecionado, encerrando')
       return
     }
 
@@ -172,26 +155,17 @@ export default function ServicosPage() {
       professional_id: professionalId
     }))
 
-    console.log('Tentando inserir rows:', rows)
-
     const { error: insertError } = await supabase!
       .from('service_professionals')
       .insert(rows)
 
     if (insertError) {
-      console.error('Erro ao inserir vínculos:', insertError)
       throw insertError
     }
-    
-    console.log('Vínculos inseridos com sucesso')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    console.log('=== INICIANDO HANDLESUBMIT ===')
-    console.log('Editando?', !!editingServico)
-    console.log('Profissionais selecionados:', selectedProfessionals)
     
     const { data: { user } } = await supabase!.auth.getUser()
     if (!user) return
@@ -205,19 +179,16 @@ export default function ServicosPage() {
     }
 
     if (editingServico) {
-      console.log('Atualizando serviço:', editingServico.id)
       const { error } = await supabase!
         .from('services')
         .update(payload)
         .eq('id', editingServico.id)
 
       if (error) {
-        console.error('Erro ao atualizar serviço:', error)
         setToast({ message: 'Erro ao atualizar serviço: ' + error.message, type: 'error' })
         return
       }
 
-      console.log('Serviço atualizado, agora salvando profissionais')
       try {
         await saveServiceProfessionals(editingServico.id)
       } catch (error: any) {
@@ -228,7 +199,6 @@ export default function ServicosPage() {
 
       setToast({ message: 'Serviço atualizado com sucesso!', type: 'success' })
     } else {
-      console.log('Criando novo serviço')
       const { data, error } = await supabase!
         .from('services')
         .insert([payload])
@@ -236,13 +206,11 @@ export default function ServicosPage() {
         .single()
 
       if (error) {
-        console.error('Erro ao adicionar serviço:', error)
         setToast({ message: 'Erro ao adicionar serviço: ' + error.message, type: 'error' })
         return
       }
 
       if (data?.id) {
-        console.log('Novo serviço criado com ID:', data.id)
         try {
           await saveServiceProfessionals(data.id)
         } catch (error: any) {
@@ -255,7 +223,6 @@ export default function ServicosPage() {
       setToast({ message: 'Serviço cadastrado com sucesso!', type: 'success' })
     }
 
-    console.log('Finalizando, limpando form e recarregando')
     setShowForm(false)
     setEditingServico(null)
     setFormData({ name: '', price: '', duration: '' })
@@ -378,7 +345,6 @@ export default function ServicosPage() {
                 }}>
                   {professionals.map((professional) => {
                     const isChecked = selectedProfessionals.includes(professional.id)
-                    console.log(`Renderizando checkbox: ${professional.name}, ID: ${professional.id}, isChecked: ${isChecked}, selectedProfessionals:`, selectedProfessionals)
                     return (
                       <label key={professional.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                         <input
@@ -386,7 +352,6 @@ export default function ServicosPage() {
                           type="checkbox"
                           defaultChecked={isChecked}
                           onChange={(e) => {
-                            console.log(`Toggling ${professional.name}, checked: ${e.target.checked}`)
                             if (e.target.checked) {
                               setSelectedProfessionals(prev => [...prev, professional.id])
                             } else {
