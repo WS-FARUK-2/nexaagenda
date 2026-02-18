@@ -384,7 +384,7 @@ export default function ServicosPage() {
                         <input
                           key={`${professional.id}-${isChecked}`}
                           type="checkbox"
-                          checked={isChecked}
+                          defaultChecked={isChecked}
                           onChange={(e) => {
                             console.log(`Toggling ${professional.name}, checked: ${e.target.checked}`)
                             if (e.target.checked) {
@@ -393,7 +393,14 @@ export default function ServicosPage() {
                               setSelectedProfessionals(prev => prev.filter((id) => id !== professional.id))
                             }
                           }}
-                          style={{ width: '16px', height: '16px', accentColor: '#E87A3F', cursor: 'pointer' }}
+                          style={{ 
+                            width: '16px', 
+                            height: '16px', 
+                            accentColor: '#E87A3F', 
+                            cursor: 'pointer',
+                            margin: 0,
+                            padding: 0
+                          }}
                         />
                         <span style={{ fontSize: '14px' }}>{professional.name}{!professional.active ? ' (inativo)' : ''}</span>
                       </label>
