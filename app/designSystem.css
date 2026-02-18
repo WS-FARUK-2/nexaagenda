@@ -189,6 +189,15 @@ input[type="radio"] {
     border-radius: 4px;
     accent-color: var(--color-accent);
     box-shadow: none;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    accent-color: var(--color-accent);
 }
 
 input:focus,
