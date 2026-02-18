@@ -135,31 +135,52 @@ export default function ServicosPage() {
   }
 
   const saveServiceProfessionals = async (serviceId: string) => {
+    console.log('=== INICIANDO saveServiceProfessionals ===')
+    console.log('Service ID:', serviceId)
+    console.log('Profissionais selecionados:', selectedProfessionals)
+    
     const { error: deleteError } = await supabase!
       .from('service_professionals')
       .delete()
       .eq('service_id', serviceId)
 
-    if (deleteError) throw deleteError
+    if (deleteError) {
+      console.error('Erro ao deletar vínculos antigos:', deleteError)
+      throw deleteError
+    }
+    
+    console.log('Vínculos antigos deletados com sucesso')
 
-    if (selectedProfessionals.length === 0) return
+    if (selectedProfessionals.length === 0) {
+      console.log('Nenhum profissional selecionado, encerrando')
+      return
+    }
 
     const rows = selectedProfessionals.map((professionalId) => ({
       service_id: serviceId,
       professional_id: professionalId
     }))
 
+    console.log('Tentando inserir rows:', rows)
+
     const { error: insertError } = await supabase!
       .from('service_professionals')
       .insert(rows)
 
-    if (insertError) throw insertError
+    if (insertError) {
+      console.error('Erro ao inserir vínculos:', insertError)
+      throw insertError
+    }
+    
+    console.log('Vínculos inseridos com sucesso')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    console.log('SALVANDO - selectedProfessionals:', selectedProfessionals)
+    console.log('=== INICIANDO HANDLESUBMIT ===')
+    console.log('Editando?', !!editingServico)
+    console.log('Profissionais selecionados:', selectedProfessionals)
     
     const { data: { user } } = await supabase!.auth.getUser()
     if (!user) return
@@ -173,18 +194,20 @@ export default function ServicosPage() {
     }
 
     if (editingServico) {
+      console.log('Atualizando serviço:', editingServico.id)
       const { error } = await supabase!
         .from('services')
         .update(payload)
         .eq('id', editingServico.id)
 
       if (error) {
+        console.error('Erro ao atualizar serviço:', error)
         setToast({ message: 'Erro ao atualizar serviço: ' + error.message, type: 'error' })
         return
       }
 
+      console.log('Serviço atualizado, agora salvando profissionais')
       try {
-        console.log('Salvando vínculos para serviço:', editingServico.id)
         await saveServiceProfessionals(editingServico.id)
       } catch (error: any) {
         console.error('Erro ao salvar profissionais:', error)
@@ -194,6 +217,7 @@ export default function ServicosPage() {
 
       setToast({ message: 'Serviço atualizado com sucesso!', type: 'success' })
     } else {
+      console.log('Criando novo serviço')
       const { data, error } = await supabase!
         .from('services')
         .insert([payload])
@@ -201,13 +225,14 @@ export default function ServicosPage() {
         .single()
 
       if (error) {
+        console.error('Erro ao adicionar serviço:', error)
         setToast({ message: 'Erro ao adicionar serviço: ' + error.message, type: 'error' })
         return
       }
 
       if (data?.id) {
+        console.log('Novo serviço criado com ID:', data.id)
         try {
-          console.log('Salvando vínculos para novo serviço:', data.id)
           await saveServiceProfessionals(data.id)
         } catch (error: any) {
           console.error('Erro ao salvar profissionais:', error)
@@ -219,6 +244,7 @@ export default function ServicosPage() {
       setToast({ message: 'Serviço cadastrado com sucesso!', type: 'success' })
     }
 
+    console.log('Finalizando, limpando form e recarregando')
     setShowForm(false)
     setEditingServico(null)
     setFormData({ name: '', price: '', duration: '' })
