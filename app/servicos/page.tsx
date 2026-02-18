@@ -382,6 +382,7 @@ export default function ServicosPage() {
                     return (
                       <label key={professional.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                         <input
+                          key={`${professional.id}-${isChecked}`}
                           type="checkbox"
                           checked={isChecked}
                           onChange={(e) => {
