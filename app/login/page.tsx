@@ -64,8 +64,6 @@ export default function LoginPage() {
           console.log('Login bem-sucedido, usuário:', data.user.email)
           
           // SEMPRE redirecionar para seleção de perfil após login
-          // A página de seleção de perfil vai verificar quantos perfis tem
-          // e redirecionar automaticamente se tiver apenas um
           console.log('Redirecionando para seleção de perfil...')
           setTimeout(() => {
             router.push('/selecionar-perfil')
