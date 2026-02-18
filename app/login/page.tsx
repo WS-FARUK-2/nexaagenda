@@ -188,56 +188,6 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit}>
-          {!isSignUp && (
-            <div style={{ marginBottom: '20px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  color: '#374151',
-                  fontWeight: '500',
-                }}
-              >
-                Eu sou
-              </label>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => setRole('admin')}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    borderRadius: '6px',
-                    border: role === 'admin' ? '2px solid #2C5F6F' : '1px solid #e5e7eb',
-                    backgroundColor: role === 'admin' ? '#2C5F6F' : 'white',
-                    color: role === 'admin' ? 'white' : '#374151',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  👨‍💼 Gerente
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('professional')}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    borderRadius: '6px',
-                    border: role === 'professional' ? '2px solid #E87A3F' : '1px solid #e5e7eb',
-                    backgroundColor: role === 'professional' ? '#E87A3F' : 'white',
-                    color: role === 'professional' ? 'white' : '#374151',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  💼 Profissional
-                </button>
-              </div>
-            </div>
-          )}
           <div style={{ marginBottom: '20px' }}>
             <label
               style={{
