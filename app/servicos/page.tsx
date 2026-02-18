@@ -112,6 +112,9 @@ export default function ServicosPage() {
   }
 
   const handleEdit = async (servico: Servico) => {
+    console.log('=== EDITANDO SERVIÇO ===')
+    console.log('Serviço:', servico)
+    
     setShowForm(true)
     setEditingServico(servico)
     setFormData({
@@ -120,10 +123,14 @@ export default function ServicosPage() {
       duration: String(servico.duration ?? '')
     })
 
+    console.log('Buscando profissionais vinculados ao serviço:', servico.id)
+    
     const { data, error } = await supabase!
       .from('service_professionals')
       .select('professional_id')
       .eq('service_id', servico.id)
+
+    console.log('Resultado da busca:', { data, error })
 
     if (error) {
       console.error('Erro ao buscar vínculos:', error)
@@ -131,7 +138,12 @@ export default function ServicosPage() {
       return
     }
 
-    setSelectedProfessionals((data || []).map((item) => item.professional_id))
+    const professionalIds = (data || []).map((item) => item.professional_id)
+    console.log('IDs dos profissionais carregados:', professionalIds)
+    
+    setSelectedProfessionals(professionalIds)
+    
+    console.log('selectedProfessionals setado para:', professionalIds)
   }
 
   const saveServiceProfessionals = async (serviceId: string) => {
