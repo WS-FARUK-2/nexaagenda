@@ -92,7 +92,7 @@ export default function CadastroPage() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <h1 style={{ textAlign: 'center', marginBottom: '8px', color: '#2C5F6F', fontSize: '32px', fontWeight: 'bold', letterSpacing: '-0.5px' }}>
-            SuaAgenda
+            NexaAgenda
           </h1>
           <div
             style={{

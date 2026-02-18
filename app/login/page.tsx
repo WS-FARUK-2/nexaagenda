@@ -163,7 +163,7 @@ export default function LoginPage() {
               letterSpacing: '-0.5px',
             }}
           >
-            SuaAgenda
+            NexaAgenda
           </h1>
           <div
             style={{
