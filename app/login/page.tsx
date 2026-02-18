@@ -16,15 +16,22 @@ export default function LoginPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const router = useRouter()
 
+  // Debug: Log quando o cliente Supabase está pronto
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
     try {
+      // Verificar se supabase está inicializado
+      if (!supabase) {
+        throw new Error('Supabase não foi inicializado. Verifique as variáveis de ambiente.')
+      }
+
       if (isSignUp) {
         // Cadastro
-        const { error } = await supabase!.auth.signUp({
+        console.log('Iniciando signup com email:', email)
+        const { error } = await supabase.auth.signUp({
           email,
           password,
         })
@@ -40,17 +47,21 @@ export default function LoginPage() {
         setIsSignUp(false)
       } else {
         // Login
-        const { data, error } = await supabase!.auth.signInWithPassword({
+        console.log('Iniciando signin com email:', email)
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
         
+        console.log('Resultado do signin:', { data, error })
+        
         if (error) {
-          console.error('Auth error:', error)
+          console.error('Erro de autenticação:', error)
           throw error
         }
 
         if (data?.user) {
+          console.log('Login bem-sucedido, usuário:', data.user.email)
           const metaRole = data.user.user_metadata?.role as 'admin' | 'professional' | undefined
           if (metaRole) {
             if (typeof window !== 'undefined') {
@@ -63,6 +74,7 @@ export default function LoginPage() {
           }
         }
         
+        console.log('Redirecionando para dashboard...')
         // Aguardar um pouco antes de redirecionar para garantir que a sessão está pronta
         setTimeout(() => {
           router.push('/dashboard')
@@ -70,8 +82,9 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Erro de autenticação:", error)
-      setToast({ message: error.message || 'Erro ao fazer login', type: 'error' })
-      setError(error.message || 'Erro ao autenticar')
+      const errorMsg = error.message || 'Erro ao fazer login'
+      setToast({ message: errorMsg, type: 'error' })
+      setError(errorMsg)
     } finally {
       setLoading(false)
     }
