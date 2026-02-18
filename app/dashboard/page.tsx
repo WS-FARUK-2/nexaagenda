@@ -133,184 +133,325 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f0f4f8' }}>
       <Sidebar user={user} />
       
-      <div style={{ flex: 1, padding: '20px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial' }}>
-      {/* Boas-vindas */}
-      <div style={{
-        backgroundColor: 'white',
-        padding: '24px',
-        borderRadius: '8px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        marginBottom: '20px'
-      }}>
-        <h2 style={{ margin: '0 0 10px 0' }}>
-          Bem-vindo, {user?.email}!
-        </h2>
-        <p style={{ margin: 0, color: '#6b7280' }}>
-          Sistema funcionando corretamente.
-        </p>
-      </div>
+      <div style={{ flex: 1, padding: '30px 20px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+          {/* Header com Boas-vindas */}
+          <div style={{
+            backgroundColor: 'linear-gradient(135deg, #2C5F6F 0%, #1a3a47 100%)',
+            padding: '40px',
+            borderRadius: '12px',
+            marginBottom: '30px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            border: '2px solid #E87A3F',
+            color: 'white'
+          }}>
+            <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 'bold' }}>
+              🎯 Bem-vindo!
+            </h1>
+            <div style={{ height: '3px', width: '60px', backgroundColor: '#E87A3F', borderRadius: '2px', marginBottom: '12px' }} />
+            <p style={{ margin: '0', fontSize: '16px', opacity: 0.9 }}>
+              Aqui você gerencia toda sua agenda e negócio
+            </p>
+            <p style={{ margin: '8px 0 0', fontSize: '14px', opacity: 0.8 }}>
+              Email: <strong>{user?.email}</strong>
+            </p>
+          </div>
 
-      {/* Cards de resumo */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '20px'
-      }}>
-        {/* Card Clientes com link */}
-        <div 
-          onClick={() => router.push('/clientes')}
-          style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <h3 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Clientes</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{counts.clientes}</p>
-          <p style={{ margin: '5px 0 0', color: '#2563eb', fontSize: '14px' }}>
-            Clique para gerenciar →
-          </p>
-        </div>
+          {/* Cards de Estatísticas Principais */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '20px',
+            marginBottom: '30px'
+          }}>
+            {/* Card Clientes */}
+            <div 
+              onClick={() => router.push('/clientes')}
+              style={{
+                backgroundColor: 'white',
+                padding: '28px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                borderLeft: '6px solid #2C5F6F',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)'
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, color: '#2C5F6F', fontSize: '14px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  👥 Clientes
+                </h3>
+                <span style={{ fontSize: '24px' }}>👤</span>
+              </div>
+              <p style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px', color: '#2C5F6F' }}>
+                {counts.clientes}
+              </p>
+              <p style={{ margin: '0', color: '#E87A3F', fontSize: '13px', fontWeight: '600' }}>
+                Clique para gerenciar →
+              </p>
+            </div>
 
-        {/* Card Serviços com link */}
-        <div 
-          onClick={() => router.push('/servicos')}
-          style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <h3 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Serviços</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{counts.servicos}</p>
-          <p style={{ margin: '5px 0 0', color: '#2563eb', fontSize: '14px' }}>
-            Clique para gerenciar →
-          </p>
-        </div>
+            {/* Card Serviços */}
+            <div 
+              onClick={() => router.push('/servicos')}
+              style={{
+                backgroundColor: 'white',
+                padding: '28px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                borderLeft: '6px solid #E87A3F',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)'
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, color: '#E87A3F', fontSize: '14px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  ✂️ Serviços
+                </h3>
+                <span style={{ fontSize: '24px' }}>🛠️</span>
+              </div>
+              <p style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px', color: '#E87A3F' }}>
+                {counts.servicos}
+              </p>
+              <p style={{ margin: '0', color: '#2C5F6F', fontSize: '13px', fontWeight: '600' }}>
+                Clique para gerenciar →
+              </p>
+            </div>
 
-        {/* Card Agendamentos com link */}
-        <div 
-          onClick={() => router.push('/agendamentos')}
-          style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <h3 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Agendamentos</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{counts.agendamentos}</p>
-          <p style={{ margin: '5px 0 0', color: '#2563eb', fontSize: '14px' }}>
-            Clique para gerenciar →
-          </p>
-        </div>
+            {/* Card Agendamentos */}
+            <div 
+              onClick={() => router.push('/agendamentos')}
+              style={{
+                backgroundColor: 'white',
+                padding: '28px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                borderLeft: '6px solid #8b5cf6',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)'
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, color: '#8b5cf6', fontSize: '14px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  📅 Agendamentos
+                </h3>
+                <span style={{ fontSize: '24px' }}>📆</span>
+              </div>
+              <p style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px', color: '#8b5cf6' }}>
+                {counts.agendamentos}
+              </p>
+              <p style={{ margin: '0', color: '#8b5cf6', fontSize: '13px', fontWeight: '600' }}>
+                Clique para gerenciar →
+              </p>
+            </div>
+          </div>
 
-        {/* Card Configuração */}
-        <div 
-          onClick={() => router.push('/dashboard/configuracao')}
-          style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s',
-            border: '2px solid #10b981'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <h3 style={{ margin: '0 0 10px 0', color: '#10b981' }}>⚙️ Configuração</h3>
-          <p style={{ fontSize: '14px', margin: 0, color: '#6b7280' }}>Link Público</p>
-          <p style={{ margin: '5px 0 0', color: '#10b981', fontSize: '14px' }}>
-            Configure seu agendamento →
-          </p>
-        </div>
+          {/* Seção de Ações Rápidas */}
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ margin: '0 0 16px 0', color: '#2C5F6F', fontSize: '18px', fontWeight: 'bold', letterSpacing: '0.5px' }}>
+              ⚡ Ações Rápidas
+            </h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '16px'
+            }}>
+              {/* Card Configuração */}
+              <div 
+                onClick={() => router.push('/dashboard/configuracao')}
+                style={{
+                  backgroundColor: 'white',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  borderTop: '3px solid #10b981',
+                  textAlign: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+                }}
+              >
+                <h3 style={{ margin: '0 0 8px 0', color: '#10b981', fontSize: '16px', fontWeight: '600' }}>⚙️</h3>
+                <p style={{ margin: '0 0 4px', color: '#374151', fontSize: '14px', fontWeight: '600' }}>Link Público</p>
+                <p style={{ margin: '0', color: '#9ca3af', fontSize: '12px' }}>Configure seu agendamento</p>
+              </div>
 
-        {/* Card Horários */}
-        <div 
-          onClick={() => router.push('/dashboard/horarios')}
-          style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s',
-            border: '2px solid #f59e0b'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <h3 style={{ margin: '0 0 10px 0', color: '#f59e0b' }}>⏰ Horários</h3>
-          <p style={{ fontSize: '14px', margin: 0, color: '#6b7280' }}>Disponibilidade</p>
-          <p style={{ margin: '5px 0 0', color: '#f59e0b', fontSize: '14px' }}>
-            Configure seus horários →
-          </p>
-        </div>
+              {/* Card Horários */}
+              <div 
+                onClick={() => router.push('/dashboard/horarios')}
+                style={{
+                  backgroundColor: 'white',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  borderTop: '3px solid #f59e0b',
+                  textAlign: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+                }}
+              >
+                <h3 style={{ margin: '0 0 8px 0', color: '#f59e0b', fontSize: '16px', fontWeight: '600' }}>⏰</h3>
+                <p style={{ margin: '0 0 4px', color: '#374151', fontSize: '14px', fontWeight: '600' }}>Horários</p>
+                <p style={{ margin: '0', color: '#9ca3af', fontSize: '12px' }}>Configure disponibilidade</p>
+              </div>
 
-        {/* Card Agendamentos Públicos */}
-        <div 
-          onClick={() => router.push('/dashboard/agendamentos-publicos')}
-          style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s',
-            border: '2px solid #8b5cf6'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <h3 style={{ margin: '0 0 10px 0', color: '#8b5cf6' }}>📅 Agendamentos Públicos</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{counts.agendamentosPublicos}</p>
-          <p style={{ margin: '5px 0 0', color: '#8b5cf6', fontSize: '14px' }}>
-            Gerenciar agendamentos →
-          </p>
-        </div>
+              {/* Card Agendamentos Públicos */}
+              <div 
+                onClick={() => router.push('/dashboard/agendamentos-publicos')}
+                style={{
+                  backgroundColor: 'white',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  borderTop: '3px solid #8b5cf6',
+                  textAlign: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+                }}
+              >
+                <h3 style={{ margin: '0 0 8px 0', color: '#8b5cf6', fontSize: '16px', fontWeight: '600' }}>📊</h3>
+                <p style={{ margin: '0 0 4px', color: '#374151', fontSize: '14px', fontWeight: '600' }}>Públicos</p>
+                <p style={{ margin: '0', color: '#9ca3af', fontSize: '12px' }}>{counts.agendamentosPublicos} agendamentos</p>
+              </div>
 
-        {/* Card Estatísticas */}
-        <div 
-          onClick={() => router.push('/dashboard/estatisticas')}
-          style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s',
-            border: '2px solid #ec4899'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <h3 style={{ margin: '0 0 10px 0', color: '#ec4899' }}>📊 Estatísticas</h3>
-          <p style={{ fontSize: '14px', margin: 0, color: '#6b7280' }}>Desempenho</p>
-          <p style={{ margin: '5px 0 0', color: '#ec4899', fontSize: '14px' }}>
-            Ver relatório detalhado →
-          </p>
-        </div>
-      </div>
+              {/* Card Estatísticas */}
+              <div 
+                onClick={() => router.push('/dashboard/estatisticas')}
+                style={{
+                  backgroundColor: 'white',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  borderTop: '3px solid #ec4899',
+                  textAlign: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+                }}
+              >
+                <h3 style={{ margin: '0 0 8px 0', color: '#ec4899', fontSize: '16px', fontWeight: '600' }}>📈</h3>
+                <p style={{ margin: '0 0 4px', color: '#374151', fontSize: '14px', fontWeight: '600' }}>Relatório</p>
+                <p style={{ margin: '0', color: '#9ca3af', fontSize: '12px' }}>Desempenho e análise</p>
+              </div>
+
+              {/* Card Profissionais */}
+              <div 
+                onClick={() => router.push('/dashboard/profissionais')}
+                style={{
+                  backgroundColor: 'white',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  borderTop: '3px solid #06b6d4',
+                  textAlign: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+                }}
+              >
+                <h3 style={{ margin: '0 0 8px 0', color: '#06b6d4', fontSize: '16px', fontWeight: '600' }}>👥</h3>
+                <p style={{ margin: '0 0 4px', color: '#374151', fontSize: '14px', fontWeight: '600' }}>Profissionais</p>
+                <p style={{ margin: '0', color: '#9ca3af', fontSize: '12px' }}>Gerenciar equipe</p>
+              </div>
+
+              {/* Card Empresa */}
+              <div 
+                onClick={() => router.push('/dashboard/empresa')}
+                style={{
+                  backgroundColor: 'white',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  borderTop: '3px solid #6366f1',
+                  textAlign: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+                }}
+              >
+                <h3 style={{ margin: '0 0 8px 0', color: '#6366f1', fontSize: '16px', fontWeight: '600' }}>🏢</h3>
+                <p style={{ margin: '0 0 4px', color: '#374151', fontSize: '14px', fontWeight: '600' }}>Empresa</p>
+                <p style={{ margin: '0', color: '#9ca3af', fontSize: '12px' }}>Dados da empresa</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
