@@ -340,6 +340,14 @@ export default function LoginPage() {
             <Link href={isSignUp ? '/login' : '/cadastro'} style={{ color: '#E87A3F', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
               {isSignUp ? '← Voltar ao Login' : 'Cadastre-se Agora →'}
             </Link>
+            
+            {!isSignUp && (
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
+                <Link href="/recuperar-senha" style={{ color: '#E87A3F', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
+                  Esqueci minha senha →
+                </Link>
+              </div>
+            )}
           </div>
         </form>
       </div>
