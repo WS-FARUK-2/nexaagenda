@@ -8,19 +8,18 @@ export default async function Home() {
   
   const supabase = createClient(supabaseUrl, supabaseKey)
   
-  // Testar conexão
-  const { error } = await supabase.from('profiles').select('*')
-  
-  if (error) {
-    console.error('Erro de conexão:', error)
-    return (
-      <div style={{ padding: '20px' }}>
-        <h1>Erro de conexão</h1>
-        <p>{error.message}</p>
-      </div>
-    )
+  try {
+    // Tentar obter a sessão atual
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    // Se houver sessão, ir para dashboard
+    if (session) {
+      redirect('/dashboard')
+    }
+  } catch (error) {
+    console.error('Erro ao verificar sessão:', error)
   }
   
-  // Se tudo ok, vai para login
+  // Se não há sessão, ir para login
   redirect('/login')
 }

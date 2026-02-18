@@ -33,6 +33,7 @@ export default function LoginPage() {
 
         if (typeof window !== 'undefined') {
           localStorage.setItem('user_role', role)
+          sessionStorage.setItem('user_role', role)
         }
         
         setToast({ message: 'Cadastro realizado! Verifique seu email para confirmar.', type: 'success' })
@@ -51,9 +52,11 @@ export default function LoginPage() {
         if (metaRole) {
           if (typeof window !== 'undefined') {
             localStorage.setItem('user_role', metaRole)
+            sessionStorage.setItem('user_role', metaRole)
           }
         } else if (typeof window !== 'undefined') {
           localStorage.setItem('user_role', role)
+          sessionStorage.setItem('user_role', role)
         }
         
         // Aguardar um pouco antes de redirecionar para garantir que a sessão está pronta
@@ -62,6 +65,7 @@ export default function LoginPage() {
         }, 500)
       }
     } catch (error: any) {
+      console.error("Erro de autenticação:", error)
       setToast({ message: error.message || 'Erro ao fazer login', type: 'error' })
       setError(error.message || 'Erro ao autenticar')
     } finally {

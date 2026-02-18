@@ -159,6 +159,8 @@ export default function ServicosPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('SALVANDO - selectedProfessionals:', selectedProfessionals)
+    
     const { data: { user } } = await supabase!.auth.getUser()
     if (!user) return
 
@@ -182,8 +184,10 @@ export default function ServicosPage() {
       }
 
       try {
+        console.log('Salvando vínculos para serviço:', editingServico.id)
         await saveServiceProfessionals(editingServico.id)
       } catch (error: any) {
+        console.error('Erro ao salvar profissionais:', error)
         setToast({ message: 'Erro ao salvar profissionais: ' + error.message, type: 'error' })
         return
       }
@@ -203,8 +207,10 @@ export default function ServicosPage() {
 
       if (data?.id) {
         try {
+          console.log('Salvando vínculos para novo serviço:', data.id)
           await saveServiceProfessionals(data.id)
         } catch (error: any) {
+          console.error('Erro ao salvar profissionais:', error)
           setToast({ message: 'Erro ao salvar profissionais: ' + error.message, type: 'error' })
           return
         }
@@ -332,20 +338,19 @@ export default function ServicosPage() {
                 }}>
                   {professionals.map((professional) => {
                     const isChecked = selectedProfessionals.includes(professional.id)
-                    const handleCheck = () => {
-                      if (isChecked) {
-                        setSelectedProfessionals(selectedProfessionals.filter((id) => id !== professional.id))
-                      } else {
-                        setSelectedProfessionals([...selectedProfessionals, professional.id])
-                      }
-                    }
                     return (
                       <label key={professional.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                         <input
                           type="checkbox"
                           checked={isChecked}
-                          onChange={handleCheck}
-                          onClick={handleCheck}
+                          onChange={(e) => {
+                            console.log(`Toggling ${professional.name}, checked: ${e.target.checked}`)
+                            if (e.target.checked) {
+                              setSelectedProfessionals(prev => [...prev, professional.id])
+                            } else {
+                              setSelectedProfessionals(prev => prev.filter((id) => id !== professional.id))
+                            }
+                          }}
                           style={{ width: '16px', height: '16px', accentColor: '#E87A3F', cursor: 'pointer' }}
                         />
                         <span style={{ fontSize: '14px' }}>{professional.name}{!professional.active ? ' (inativo)' : ''}</span>
