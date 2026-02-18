@@ -97,39 +97,55 @@ export default function LoginPage() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f3f4f6',
-        fontFamily: 'Arial',
+        background: 'linear-gradient(135deg, #2C5F6F 0%, #1a3a47 100%)',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
       <div
         style={{
           backgroundColor: 'white',
-          padding: '40px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          padding: '50px 40px',
+          borderRadius: '12px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           width: '100%',
-          maxWidth: '400px',
+          maxWidth: '420px',
+          border: '2px solid #E87A3F',
         }}
       >
-        <h1
-          style={{
-            textAlign: 'center',
-            color: '#2563eb',
-            marginBottom: '10px',
-            fontSize: '28px',
-          }}
-        >
-          NexaAgenda
-        </h1>
-        <p
-          style={{
-            textAlign: 'center',
-            color: '#6b7280',
-            marginBottom: '30px',
-          }}
-        >
-          {isSignUp ? 'Criar nova conta' : 'Entre na sua conta'}
-        </p>
+        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+          <h1
+            style={{
+              textAlign: 'center',
+              color: '#2C5F6F',
+              marginBottom: '8px',
+              fontSize: '32px',
+              fontWeight: 'bold',
+              letterSpacing: '-0.5px',
+            }}
+          >
+            SuaAgenda
+          </h1>
+          <div
+            style={{
+              height: '3px',
+              width: '60px',
+              backgroundColor: '#E87A3F',
+              margin: '0 auto 16px',
+              borderRadius: '2px',
+            }}
+          />
+          <p
+            style={{
+              textAlign: 'center',
+              color: '#6b7280',
+              marginBottom: '0',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            {isSignUp ? 'Crie sua conta' : 'Bem-vindo de volta'}
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit}>
           {!isSignUp && (
@@ -152,13 +168,15 @@ export default function LoginPage() {
                     flex: 1,
                     padding: '10px',
                     borderRadius: '6px',
-                    border: role === 'admin' ? '2px solid #2563eb' : '1px solid #d1d5db',
-                    backgroundColor: role === 'admin' ? '#eff6ff' : 'white',
+                    border: role === 'admin' ? '2px solid #2C5F6F' : '1px solid #e5e7eb',
+                    backgroundColor: role === 'admin' ? '#2C5F6F' : 'white',
+                    color: role === 'admin' ? 'white' : '#374151',
                     cursor: 'pointer',
-                    fontWeight: role === 'admin' ? 'bold' : 'normal'
+                    fontWeight: '600',
+                    transition: 'all 0.2s ease',
                   }}
                 >
-                  Administrador
+                  👨‍💼 Gerente
                 </button>
                 <button
                   type="button"
@@ -167,13 +185,15 @@ export default function LoginPage() {
                     flex: 1,
                     padding: '10px',
                     borderRadius: '6px',
-                    border: role === 'professional' ? '2px solid #2563eb' : '1px solid #d1d5db',
-                    backgroundColor: role === 'professional' ? '#eff6ff' : 'white',
+                    border: role === 'professional' ? '2px solid #E87A3F' : '1px solid #e5e7eb',
+                    backgroundColor: role === 'professional' ? '#E87A3F' : 'white',
+                    color: role === 'professional' ? 'white' : '#374151',
                     cursor: 'pointer',
-                    fontWeight: role === 'professional' ? 'bold' : 'normal'
+                    fontWeight: '600',
+                    transition: 'all 0.2s ease',
                   }}
                 >
-                  Profissional
+                  💼 Profissional
                 </button>
               </div>
             </div>
@@ -254,21 +274,31 @@ export default function LoginPage() {
             style={{
               width: '100%',
               padding: '12px',
-              backgroundColor: loading ? '#9ca3af' : '#2563eb',
+              backgroundColor: loading ? '#d1d5db' : '#E87A3F',
               color: 'white',
               border: 'none',
-              borderRadius: '4px',
+              borderRadius: '6px',
               fontSize: '16px',
               fontWeight: '600',
               cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = '#d66b2f'
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = '#E87A3F'
             }}
           >
-            {loading ? 'Carregando...' : isSignUp ? 'Cadastrar' : 'Entrar'}
+            {loading ? '⏳ Processando...' : isSignUp ? '✨ Cadastrar' : '🔓 Entrar'}
           </button>
 
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <Link href="/cadastro" style={{ color: '#2563eb', textDecoration: 'none' }}>
-              Não tem uma conta? Cadastre-se
+          <div style={{ textAlign: 'center', marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #e5e7eb' }}>
+            <p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '14px' }}>
+              {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}
+            </p>
+            <Link href={isSignUp ? '/login' : '/cadastro'} style={{ color: '#E87A3F', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
+              {isSignUp ? '← Voltar ao Login' : 'Cadastre-se Agora →'}
             </Link>
           </div>
         </form>
