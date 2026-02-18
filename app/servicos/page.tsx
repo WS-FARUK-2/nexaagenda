@@ -306,13 +306,16 @@ export default function ServicosPage() {
       </div>
 
       {showForm && (
-        <div style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '30px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
+        <div 
+          key={editingServico ? editingServico.id : 'new'}
+          style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '8px',
+            marginBottom: '30px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        >
           <h2 style={{ marginBottom: '20px' }}>{editingServico ? 'Editar Serviço' : 'Adicionar Serviço'}</h2>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '15px' }}>
