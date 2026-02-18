@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
 import ConfirmModal from '@/components/ConfirmModal'
+import CalendarGrid from '@/components/CalendarGrid'
 import { generateWhatsAppURL, generateAppointmentReminder } from '@/lib/whatsapp'
 import Sidebar from '@/components/Sidebar'
 
@@ -36,6 +37,7 @@ interface Appointment {
 export default function AgendamentosPage() {
   const [user, setUser] = useState<any>(null)
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [professionals, setProfessionals] = useState<any[]>([])
   const [patients, setPatients] = useState<Patient[]>([])
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,6 +47,8 @@ export default function AgendamentosPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; appointmentId: string }>({ isOpen: false, appointmentId: '' })
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [viewMode, setViewMode] = useState<'calendar' | 'table'>('calendar')
 
   const [formData, setFormData] = useState({
     patient_id: '',
@@ -86,6 +90,15 @@ export default function AgendamentosPage() {
         .order('appointment_date', { ascending: true })
 
       setAppointments(appointmentsData || [])
+
+      // Buscar profissionais
+      const { data: professionalsData } = await supabase
+        .from('profissionais')
+        .select('id, name, cor')
+        .eq('user_id', userId)
+        .eq('ativo', true)
+
+      setProfessionals(professionalsData || [])
 
       // Buscar clientes
       const { data: patientsData } = await supabase
@@ -266,6 +279,43 @@ export default function AgendamentosPage() {
     })
   }
 
+  // Handlers para calendário
+  const handleCalendarSlotClick = (professionalId: string, time: string, date: Date) => {
+    const dateStr = date.toISOString().split('T')[0]
+    setFormData({
+      patient_id: '',
+      service_id: '',
+      appointment_date: dateStr,
+      appointment_time: time,
+      status: 'Pendente',
+    })
+    setEditingId(null)
+  }
+
+  const handleCalendarEventClick = (event: any) => {
+    const appointment = appointments.find(apt => apt.id === event.id)
+    if (appointment) {
+      handleEdit(appointment)
+    }
+  }
+
+  // Converter agendamentos para formato de eventos do calendário
+  const calendarEvents = appointments.map(apt => ({
+    id: apt.id,
+    professionalId: '', // será atualizado quando adicionarmos profissional aos agendamentos
+    time: apt.appointment_time,
+    clientName: apt.patient?.name || 'N/A',
+    serviceName: apt.service?.name || 'N/A',
+    duration: 30
+  }))
+
+  // Converter profissionais para formato do calendário
+  const calendarProfessionals = professionals.map(prof => ({
+    id: prof.id,
+    name: prof.name,
+    color: prof.cor || '#2C5F6F'
+  }))
+
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -282,7 +332,41 @@ export default function AgendamentosPage() {
       <Sidebar user={user} />
       <div style={{ flex: 1, padding: '20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <h1>Agendamentos</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>Agendamentos</h1>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={() => setViewMode('calendar')}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: viewMode === 'calendar' ? '#2C5F6F' : '#e0e0e0',
+              color: viewMode === 'calendar' ? 'white' : '#333',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
+          >
+            📅 Calendário
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: viewMode === 'table' ? '#2C5F6F' : '#e0e0e0',
+              color: viewMode === 'table' ? 'white' : '#333',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
+          >
+            📋 Tabela
+          </button>
+        </div>
+      </div>
 
       {error && (
         <div style={{
@@ -307,6 +391,30 @@ export default function AgendamentosPage() {
           border: '1px solid #cfc'
         }}>
           {success}
+        </div>
+      )}
+
+      {/* Calendário */}
+      {viewMode === 'calendar' && professionals.length > 0 && (
+        <div style={{
+          backgroundColor: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          marginBottom: '30px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
+          <CalendarGrid
+            professionals={calendarProfessionals}
+            events={calendarEvents}
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+            onSlotClick={handleCalendarSlotClick}
+            onEventClick={handleCalendarEventClick}
+            interval={15}
+            startHour={8}
+            endHour={20}
+            isLoading={loading}
+          />
         </div>
       )}
 
