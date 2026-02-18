@@ -9,9 +9,9 @@ import Toast from '@/components/Toast'
 export default function SelecionarPerfilPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'professional' | null>(null)
+  const [selectedRole, setSelectedRole] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [perfis, setPerfis] = useState<Array<{ id: string; type: 'admin' | 'professional'; label: string; icon: string }>>([])
+  const [perfis, setPerfis] = useState<Array<{ id: string; type: 'admin' | 'professional'; label: string }>>([])
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const router = useRouter()
 
@@ -27,13 +27,9 @@ export default function SelecionarPerfilPage() {
 
         setUser(user)
 
-        // Verificar quais perfis o usuário tem acesso
-        // Admin: se tem uma linha na tabela 'empresas' como owner
-        // Professional: se tem uma linha na tabela 'profissionais'
-        
-        const availablePerfis: Array<{ id: string; type: 'admin' | 'professional'; label: string; icon: string }> = []
+        const availablePerfis: Array<{ id: string; type: 'admin' | 'professional'; label: string }> = []
 
-        // Verificar se é admin
+        // Verificar se é admin (tem empresa)
         try {
           const { data: empresas, error: empresasError } = await supabase!
             .from('empresas')
@@ -45,15 +41,14 @@ export default function SelecionarPerfilPage() {
             availablePerfis.push({
               id: 'admin',
               type: 'admin',
-              label: 'Administrador',
-              icon: '👔'
+              label: 'Administrator'
             })
           }
         } catch (error) {
           console.error('Erro ao verificar perfil admin:', error)
         }
 
-        // Verificar se é professional
+        // Verificar se é profissional
         try {
           const { data: professionals, error: profsError } = await supabase!
             .from('profissionais')
@@ -65,8 +60,7 @@ export default function SelecionarPerfilPage() {
             availablePerfis.push({
               id: 'professional',
               type: 'professional',
-              label: 'Profissional',
-              icon: '💼'
+              label: 'Profissional'
             })
           }
         } catch (error) {
@@ -101,6 +95,7 @@ export default function SelecionarPerfilPage() {
 
         // Tem múltiplos perfis, mostrar seleção
         setPerfis(availablePerfis)
+        setSelectedRole(availablePerfis[0].type) // Selecionar o primeiro por padrão
       } catch (error) {
         console.error('Erro ao verificar perfis:', error)
         setToast({ message: 'Erro ao carregar perfis', type: 'error' })
@@ -112,20 +107,30 @@ export default function SelecionarPerfilPage() {
     checkUser()
   }, [router])
 
-  const handleSelectPerfil = async (role: 'admin' | 'professional') => {
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRole(e.target.value)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!selectedRole) {
+      setToast({ message: 'Selecione um perfil', type: 'error' })
+      return
+    }
+
     try {
       setSubmitting(true)
-      setSelectedRole(role)
 
       // Salvar role selecionado
       if (typeof window !== 'undefined') {
-        localStorage.setItem('user_role', role)
-        sessionStorage.setItem('user_role', role)
+        localStorage.setItem('user_role', selectedRole)
+        sessionStorage.setItem('user_role', selectedRole)
       }
 
-      // Aguardar um pouco para garantir que o storage foi atualizado
+      // Redirecionar após seleção
       setTimeout(() => {
-        if (role === 'professional') {
+        if (selectedRole === 'professional') {
           router.push('/dashboard/profissional')
         } else {
           router.push('/dashboard')
@@ -135,7 +140,6 @@ export default function SelecionarPerfilPage() {
       console.error('Erro ao selecionar perfil:', error)
       setToast({ message: 'Erro ao selecionar perfil', type: 'error' })
       setSubmitting(false)
-      setSelectedRole(null)
     }
   }
 
@@ -156,7 +160,7 @@ export default function SelecionarPerfilPage() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #2C5F6F 0%, #1a3a47 100%)',
+        background: '#e8e8e8',
         padding: '20px',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       }}
@@ -165,104 +169,60 @@ export default function SelecionarPerfilPage() {
         style={{
           background: 'white',
           borderRadius: '12px',
-          padding: '40px',
+          padding: '50px 40px',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-          maxWidth: '600px',
+          maxWidth: '500px',
           width: '100%',
-          animation: 'slideUp 0.3s ease-out',
+          textAlign: 'center',
         }}
       >
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ 
-            fontSize: '28px', 
-            fontWeight: '600', 
-            color: '#1a3a47',
-            margin: '0 0 10px 0'
-          }}>
-            Selecione seu Perfil
-          </h1>
-          <p style={{ 
-            fontSize: '14px', 
-            color: '#666',
-            margin: '0'
-          }}>
-            Você tem acesso a múltiplos perfis
-          </p>
+        {/* Logo */}
+        <div style={{ marginBottom: '30px', fontSize: '60px' }}>
+          🕐
         </div>
 
-        {/* Perfis Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '20px',
-          marginBottom: '40px',
+        {/* Texto */}
+        <p style={{ 
+          fontSize: '16px', 
+          color: '#2C5F6F',
+          marginBottom: '30px',
+          fontWeight: '500'
         }}>
-          {perfis.map((perfil) => (
-            <button
-              key={perfil.id}
-              onClick={() => handleSelectPerfil(perfil.type)}
-              disabled={submitting && selectedRole !== perfil.type}
-              className={`perfil-button ${selectedRole === perfil.type ? 'selected' : ''} ${submitting && selectedRole !== perfil.type ? 'disabled' : ''}`}
-              style={{
-                background: selectedRole === perfil.type 
-                  ? '#2C5F6F' 
-                  : 'white',
-                border: '2px solid #2C5F6F',
-                borderRadius: '12px',
-                padding: '30px',
-                cursor: submitting && selectedRole !== perfil.type ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s ease',
-                opacity: submitting && selectedRole !== perfil.type ? 0.5 : 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '15px',
-              }}
-            >
-              <div style={{ fontSize: '40px' }}>
-                {perfil.icon}
-              </div>
-              <div style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: selectedRole === perfil.type ? 'white' : '#1a3a47',
-              }}>
+          Olá bem vindo de volta, agora selecione qual perfil deseja acessar
+        </p>
+
+        {/* Select Dropdown */}
+        <form onSubmit={handleSubmit}>
+          <select
+            value={selectedRole}
+            onChange={handleSelectChange}
+            disabled={submitting}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              fontSize: '16px',
+              border: '1px solid #ccc',
+              borderRadius: '6px',
+              backgroundColor: 'white',
+              color: '#333',
+              cursor: submitting ? 'not-allowed' : 'pointer',
+              appearance: 'none',
+              backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              backgroundSize: '20px',
+              paddingRight: '40px',
+              opacity: submitting ? 0.6 : 1,
+            }}
+          >
+            <option value="">Selecione um perfil...</option>
+            {perfis.map((perfil) => (
+              <option key={perfil.id} value={perfil.type}>
                 {perfil.label}
-              </div>
-              <div style={{
-                fontSize: '13px',
-                color: selectedRole === perfil.type ? 'rgba(255,255,255,0.8)' : '#999',
-              }}>
-                {perfil.type === 'admin' 
-                  ? 'Gerenciar empresas e agendamentos'
-                  : 'Visualizar seus agendamentos'
-                }
-              </div>
-
-              {selectedRole === perfil.type && (
-                <div style={{
-                  marginTop: '10px',
-                  fontSize: '12px',
-                  color: 'white',
-                }}>
-                  ✓ Selecionado
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <div style={{
-          textAlign: 'center',
-          fontSize: '13px',
-          color: '#999',
-        }}>
-          <p style={{ margin: '0' }}>
-            Você pode mudar seu perfil a qualquer momento nas configurações
-          </p>
-        </div>
+              </option>
+            ))}
+          </select>
+        </form>
       </div>
 
       {/* Toast */}
@@ -273,44 +233,6 @@ export default function SelecionarPerfilPage() {
           onClose={() => setToast(null)}
         />
       )}
-
-      <style>{`
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .perfil-button:hover:not(.disabled) {
-          background: #f5f5f5 !important;
-          transform: translateY(-2px);
-        }
-
-        .perfil-button.selected {
-          background: #2C5F6F;
-          color: white;
-        }
-
-        .perfil-button.disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        @media (max-width: 768px) {
-          div[style*="padding: 40px"] {
-            padding: 30px 20px !important;
-          }
-
-          div[style*="gridTemplateColumns: '1fr 1fr'"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }
