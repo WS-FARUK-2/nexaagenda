@@ -67,35 +67,16 @@ export default function SelecionarPerfilPage() {
           console.error('Erro ao verificar perfil professional:', error)
         }
 
-        // Se não tem nenhum perfil, redireciona para dashboard admin (padrão)
-        if (availablePerfis.length === 0) {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('user_role', 'admin')
-            sessionStorage.setItem('user_role', 'admin')
-          }
-          router.push('/dashboard')
-          return
-        }
+        // Se tem NENHUM ou APENAS 1 perfil encontrado no banco
+        // Mostrar opções: Administrator e Profissional
+        // Deixar usuário escolher
+        const allOptions: Array<{ id: string; type: 'admin' | 'professional'; label: string }> = [
+          { id: 'admin', type: 'admin', label: 'Administrator' },
+          { id: 'professional', type: 'professional', label: 'Profissional' }
+        ]
 
-        // Se tem apenas um perfil, redireciona automaticamente
-        if (availablePerfis.length === 1) {
-          const role = availablePerfis[0].type
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('user_role', role)
-            sessionStorage.setItem('user_role', role)
-          }
-          
-          if (role === 'professional') {
-            router.push('/dashboard/profissional')
-          } else {
-            router.push('/dashboard')
-          }
-          return
-        }
-
-        // Tem múltiplos perfis, mostrar seleção
-        setPerfis(availablePerfis)
-        setSelectedRole(availablePerfis[0].type) // Selecionar o primeiro por padrão
+        setPerfis(allOptions)
+        setSelectedRole('admin') // Selecionar Administrator por padrão
       } catch (error) {
         console.error('Erro ao verificar perfis:', error)
         setToast({ message: 'Erro ao carregar perfis', type: 'error' })
@@ -107,30 +88,27 @@ export default function SelecionarPerfilPage() {
     checkUser()
   }, [router])
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedRole(e.target.value)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const role = e.target.value
     
-    if (!selectedRole) {
+    if (!role) {
       setToast({ message: 'Selecione um perfil', type: 'error' })
       return
     }
 
     try {
       setSubmitting(true)
+      setSelectedRole(role)
 
       // Salvar role selecionado
       if (typeof window !== 'undefined') {
-        localStorage.setItem('user_role', selectedRole)
-        sessionStorage.setItem('user_role', selectedRole)
+        localStorage.setItem('user_role', role)
+        sessionStorage.setItem('user_role', role)
       }
 
       // Redirecionar após seleção
       setTimeout(() => {
-        if (selectedRole === 'professional') {
+        if (role === 'professional') {
           router.push('/dashboard/profissional')
         } else {
           router.push('/dashboard')
@@ -144,11 +122,6 @@ export default function SelecionarPerfilPage() {
   }
 
   if (loading) {
-    return <LoadingSpinner />
-  }
-
-  // Se chegou aqui sem perfis múltiplos, algo deu errado
-  if (perfis.length === 0) {
     return <LoadingSpinner />
   }
 
@@ -192,37 +165,35 @@ export default function SelecionarPerfilPage() {
         </p>
 
         {/* Select Dropdown */}
-        <form onSubmit={handleSubmit}>
-          <select
-            value={selectedRole}
-            onChange={handleSelectChange}
-            disabled={submitting}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              fontSize: '16px',
-              border: '1px solid #ccc',
-              borderRadius: '6px',
-              backgroundColor: 'white',
-              color: '#333',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              appearance: 'none',
-              backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 12px center',
-              backgroundSize: '20px',
-              paddingRight: '40px',
-              opacity: submitting ? 0.6 : 1,
-            }}
-          >
-            <option value="">Selecione um perfil...</option>
-            {perfis.map((perfil) => (
-              <option key={perfil.id} value={perfil.type}>
-                {perfil.label}
-              </option>
-            ))}
-          </select>
-        </form>
+        <select
+          value={selectedRole}
+          onChange={handleSelectChange}
+          disabled={submitting}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            fontSize: '16px',
+            border: '1px solid #ccc',
+            borderRadius: '6px',
+            backgroundColor: 'white',
+            color: '#333',
+            cursor: submitting ? 'not-allowed' : 'pointer',
+            appearance: 'none',
+            backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 12px center',
+            backgroundSize: '20px',
+            paddingRight: '40px',
+            opacity: submitting ? 0.6 : 1,
+          }}
+        >
+          <option value="">Selecione um perfil...</option>
+          {perfis.map((perfil) => (
+            <option key={perfil.id} value={perfil.type}>
+              {perfil.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Toast */}
