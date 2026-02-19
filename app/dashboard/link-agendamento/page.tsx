@@ -32,15 +32,47 @@ export default function LinkAgendamentoPage() {
       
       // Buscar ou criar slug do perfil público
       const { data: profileData, error: profileError } = await supabase
-        .from('perfis_publicos')
+        .from('profiles_public')
         .select('slug')
         .eq('user_id', user.id)
+        .eq('ativo', true)
         .single()
 
-      let userSlug = user.id.substring(0, 8) // fallback: primeiros 8 caracteres do user_id
+      let userSlug = ''
       
-      if (!profileError && profileData) {
+      if (!profileError && profileData && profileData.slug) {
+        // Se existe perfil público ativo com slug, usa ele
         userSlug = profileData.slug
+      } else {
+        // Senão, cria um slug baseado no email do usuário
+        const emailSlug = user.email?.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '_')
+        userSlug = emailSlug || user.id.substring(0, 8)
+        
+        // Tentar criar/atualizar perfil público
+        const { data: existingProfile } = await supabase
+          .from('profiles_public')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
+        
+        if (existingProfile) {
+          // Atualiza slug do perfil existente
+          await supabase
+            .from('profiles_public')
+            .update({ slug: userSlug, ativo: true })
+            .eq('user_id', user.id)
+        } else {
+          // Cria novo perfil público
+          await supabase
+            .from('profiles_public')
+            .insert({
+              user_id: user.id,
+              slug: userSlug,
+              nome_profissional: user.email?.split('@')[0] || 'Profissional',
+              cor_primaria: '#E87A3F',
+              ativo: true
+            })
+        }
       }
       
       // Gera o link baseado no slug
