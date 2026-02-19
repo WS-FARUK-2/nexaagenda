@@ -123,28 +123,32 @@ CREATE TABLE IF NOT EXISTS profiles_public (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Índices para profiles_public
+-- Índices para profiles_public (DROP antes de criar para evitar erros)
+DROP INDEX IF EXISTS idx_profiles_public_user_id;
+DROP INDEX IF EXISTS idx_profiles_public_slug;
 CREATE INDEX idx_profiles_public_user_id ON profiles_public(user_id);
 CREATE INDEX idx_profiles_public_slug ON profiles_public(slug);
 
 -- RLS para profiles_public
 ALTER TABLE profiles_public ENABLE ROW LEVEL SECURITY;
 
+-- Drop policies existentes antes de criar
+DROP POLICY IF EXISTS "Users can manage their own public profile" ON profiles_public;
+DROP POLICY IF EXISTS "Anyone can view active public profiles" ON profiles_public;
+DROP POLICY IF EXISTS "Authenticated users can insert their profile" ON profiles_public;
+
+-- Criar policies
 CREATE POLICY "Users can manage their own public profile"
   ON profiles_public
   FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
--- Policy: Qualquer pessoa pode VER perfis públicos ativos
-DROP POLICY IF EXISTS "Anyone can view active public profiles" ON profiles_public;
 CREATE POLICY "Anyone can view active public profiles"
   ON profiles_public
   FOR SELECT
   USING (ativo = true);
 
--- Policy: Permitir inserção autenticada
-DROP POLICY IF EXISTS "Authenticated users can insert their profile" ON profiles_public;
 CREATE POLICY "Authenticated users can insert their profile"
   ON profiles_public
   FOR INSERT
