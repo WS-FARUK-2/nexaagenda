@@ -73,7 +73,7 @@ export default function Sidebar({ user }: { user: any }) {
         { id: 'servicos', label: 'Serviços', icon: '✂️', href: '/servicos', roles: ['admin'] },
         { id: 'clientes', label: 'Clientes', icon: '👫', href: '/clientes', roles: ['admin'] },
         { id: 'empresa', label: 'Dados da Empresa', icon: '🏢', href: '/dashboard/empresa', roles: ['admin'] },
-        { id: 'link-agendamento', label: 'Link de Agendamento', icon: '🔗', href: '/dashboard/configuracao', roles: ['admin'] }
+        { id: 'link-agendamento', label: 'Link de Agendamento', icon: '🔗', href: '/dashboard/link-agendamento', roles: ['admin'] }
       ]
     },
     {
