@@ -91,26 +91,29 @@ export default function SelecionarPerfilPage() {
   const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const role = e.target.value
     
-    if (!role) {
+    console.log('Valor do dropdown:', e.target.value)
+    console.log('Role extraído:', role)
+    
+    if (!role || role === '') {
       console.log('Nenhum perfil selecionado')
-      setToast({ message: 'Selecione um perfil', type: 'error' })
       return
     }
 
     try {
-      console.log('Perfil selecionado:', role)
-      setSubmitting(true)
-      setSelectedRole(role)
-
-      // Salvar role selecionado
+      console.log('Salvando role:', role)
+      
+      // Salvar role selecionado ANTES de redirecionar
       if (typeof window !== 'undefined') {
         localStorage.setItem('user_role', role)
         sessionStorage.setItem('user_role', role)
-        console.log('Role salvo no localStorage:', role)
+        console.log('Role salvo:', localStorage.getItem('user_role'))
       }
 
+      // Pequeno delay para garantir que foi salvo
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       // Redirecionar imediatamente
-      console.log('Redirecionando para:', role === 'professional' ? '/dashboard/profissional' : '/dashboard')
+      console.log('Iniciando redirecionamento para:', role === 'professional' ? '/dashboard/profissional' : '/dashboard')
       if (role === 'professional') {
         router.push('/dashboard/profissional')
       } else {
@@ -118,8 +121,6 @@ export default function SelecionarPerfilPage() {
       }
     } catch (error) {
       console.error('Erro ao selecionar perfil:', error)
-      setToast({ message: 'Erro ao selecionar perfil', type: 'error' })
-      setSubmitting(false)
     }
   }
 

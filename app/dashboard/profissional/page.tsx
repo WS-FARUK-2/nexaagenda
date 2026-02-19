@@ -24,15 +24,18 @@ export default function DashboardProfissionalPage() {
     const getUser = async () => {
       const { data: { user } } = await supabase!.auth.getUser()
       if (!user) {
+        console.log('Dashboard Profissional: Usuário não autenticado')
         router.push('/login')
         return
       }
 
       // Verificar se o usuário já selecionou um perfil
       const storedRole = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null
+      console.log('Dashboard Profissional: Role no localStorage:', storedRole)
       
       // Se não tem role selecionado, precisa passar pela página de seleção
       if (!storedRole) {
+        console.log('Dashboard Profissional: Sem role, redirecionando')
         router.push('/selecionar-perfil')
         setLoading(false)
         return
@@ -40,11 +43,13 @@ export default function DashboardProfissionalPage() {
 
       // Se não é profissional, vai pro dashboard admin
       if (storedRole !== 'professional') {
+        console.log('Dashboard Profissional: Role não é profissional, redirecionando')
         router.push('/dashboard')
         setLoading(false)
         return
       }
 
+      console.log('Dashboard Profissional: Role é profissional, carregando')
       setUser(user)
       await loadAgenda(user.id)
       setLoading(false)
