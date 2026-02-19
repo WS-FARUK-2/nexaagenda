@@ -149,7 +149,7 @@ export default function DashboardPage() {
         <div style={{ maxWidth: '1400px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
           {/* Header com Boas-vindas */}
           <div style={{
-            backgroundColor: 'linear-gradient(135deg, #2C5F6F 0%, #1a3a47 100%)',
+            backgroundImage: 'linear-gradient(135deg, #2C5F6F 0%, #1a3a47 100%)',
             padding: '40px',
             borderRadius: '12px',
             marginBottom: '30px',
@@ -157,14 +157,14 @@ export default function DashboardPage() {
             border: '2px solid #E87A3F',
             color: 'white'
           }}>
-            <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 'bold' }}>
+            <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 'bold', color: 'white' }}>
               🎯 Bem-vindo!
             </h1>
             <div style={{ height: '3px', width: '60px', backgroundColor: '#E87A3F', borderRadius: '2px', marginBottom: '12px' }} />
-            <p style={{ margin: '0', fontSize: '16px', opacity: 0.9 }}>
+            <p style={{ margin: '0', fontSize: '16px', opacity: 0.9, color: 'white' }}>
               Aqui você gerencia toda sua agenda e negócio
             </p>
-            <p style={{ margin: '8px 0 0', fontSize: '14px', opacity: 0.8 }}>
+            <p style={{ margin: '8px 0 0', fontSize: '14px', opacity: 0.8, color: 'white' }}>
               Email: <strong>{user?.email}</strong>
             </p>
           </div>
