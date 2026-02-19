@@ -1,25 +1,45 @@
-import { createClient } from '@supabase/supabase-js'
-import { redirect } from 'next/navigation'
+'use client'
 
-export default async function Home() {
-  // Criar cliente Supabase diretamente aqui
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  
-  const supabase = createClient(supabaseUrl, supabaseKey)
-  
-  try {
-    // Tentar obter a sessão atual
-    const { data: { session } } = await supabase.auth.getSession()
-    
-    // Se houver sessão, ir para dashboard
-    if (session) {
-      redirect('/dashboard')
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
+import LoadingSpinner from '@/components/LoadingSpinner'
+
+export default function Home() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user } } = await supabase!.auth.getUser()
+        
+        if (!user) {
+          // Se não está logado, vai para login
+          router.push('/login')
+        } else {
+          // Se está logado, vai para seleção de perfil (ou direto pro dashboard se já selecionou)
+          const storedRole = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null
+          
+          if (!storedRole) {
+            // Sem role selecionado, vai para seleção
+            router.push('/selecionar-perfil')
+          } else if (storedRole === 'professional') {
+            // Se é profissional, vai pro dashboard profissional
+            router.push('/dashboard/profissional')
+          } else {
+            // Se é admin, vai pro dashboard
+            router.push('/dashboard')
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error)
+        router.push('/login')
+      }
     }
-  } catch (error) {
-    console.error('Erro ao verificar sessão:', error)
-  }
-  
-  // Se não há sessão, ir para login
-  redirect('/login')
+
+    checkAuth()
+  }, [router])
+
+  return <LoadingSpinner />
 }
+

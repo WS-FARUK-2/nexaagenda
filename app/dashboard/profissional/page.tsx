@@ -27,6 +27,24 @@ export default function DashboardProfissionalPage() {
         router.push('/login')
         return
       }
+
+      // Verificar se o usuário já selecionou um perfil
+      const storedRole = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null
+      
+      // Se não tem role selecionado, precisa passar pela página de seleção
+      if (!storedRole) {
+        router.push('/selecionar-perfil')
+        setLoading(false)
+        return
+      }
+
+      // Se não é profissional, vai pro dashboard admin
+      if (storedRole !== 'professional') {
+        router.push('/dashboard')
+        setLoading(false)
+        return
+      }
+
       setUser(user)
       await loadAgenda(user.id)
       setLoading(false)

@@ -26,14 +26,23 @@ export default function DashboardPage() {
           // Se não estiver logado, redireciona para login
           router.push('/login')
         } else {
-          if (typeof window !== 'undefined') {
-            const storedRole = localStorage.getItem('user_role')
-            if (storedRole === 'professional') {
-              router.push('/dashboard/profissional')
-              setLoading(false)
-              return
-            }
+          // Verificar se o usuário já selecionou um perfil
+          const storedRole = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null
+          
+          // Se não tem role selecionado, precisa passar pela página de seleção
+          if (!storedRole) {
+            router.push('/selecionar-perfil')
+            setLoading(false)
+            return
           }
+
+          // Se é profissional, redireciona para dashboard profissional
+          if (storedRole === 'professional') {
+            router.push('/dashboard/profissional')
+            setLoading(false)
+            return
+          }
+          
           setUser(user)
           // Carregar contadores com timeout
           const timeoutId = setTimeout(() => {
