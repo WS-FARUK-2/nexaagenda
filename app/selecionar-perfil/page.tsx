@@ -76,7 +76,7 @@ export default function SelecionarPerfilPage() {
         ]
 
         setPerfis(allOptions)
-        setSelectedRole('admin') // Selecionar Administrator por padrão
+        setSelectedRole('') // Deixar vazio por padrão para forçar onChange
       } catch (error) {
         console.error('Erro ao verificar perfis:', error)
         setToast({ message: 'Erro ao carregar perfis', type: 'error' })
