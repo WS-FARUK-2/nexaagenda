@@ -24,16 +24,13 @@ export default function DashboardPage() {
         
         if (!user) {
           // Se não estiver logado, redireciona para login
-          console.log('Dashboard: Usuário não autenticado, redirecionando para login')
           router.push('/login')
         } else {
           // Verificar se o usuário já selecionou um perfil
           const storedRole = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null
-          console.log('Dashboard: Usuário logado, role no localStorage:', storedRole)
           
           // Se não tem role selecionado, precisa passar pela página de seleção
           if (!storedRole) {
-            console.log('Dashboard: Sem role, redirecionando para seleção')
             router.push('/selecionar-perfil')
             setLoading(false)
             return
@@ -41,13 +38,11 @@ export default function DashboardPage() {
 
           // Se é profissional, redireciona para dashboard profissional
           if (storedRole === 'professional') {
-            console.log('Dashboard: Role é profissional, redirecionando')
             router.push('/dashboard/profissional')
             setLoading(false)
             return
           }
           
-          console.log('Dashboard: Role é admin, carregando dashboard')
           setUser(user)
           // Carregar contadores com timeout
           const timeoutId = setTimeout(() => {

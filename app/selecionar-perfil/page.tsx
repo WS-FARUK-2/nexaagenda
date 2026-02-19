@@ -89,36 +89,23 @@ export default function SelecionarPerfilPage() {
   }, [router])
 
   const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log('handleSelectChange disparado com evento:', e)
-    console.log('event.target.value:', e.target.value)
-    
     const role = e.target.value
     
-    console.log('Valor do dropdown:', e.target.value)
-    console.log('Role extraído:', role)
-    console.log('Tipo de role:', typeof role)
-    console.log('Role vazio?:', role === '')
-    
     if (!role || role === '') {
-      console.log('Nenhum perfil selecionado - retornando')
       return
     }
 
     try {
-      console.log('Perfil selecionado válido:', role)
-      
       // Salvar role selecionado ANTES de redirecionar
       if (typeof window !== 'undefined') {
         localStorage.setItem('user_role', role)
         sessionStorage.setItem('user_role', role)
-        console.log('Role salvo no localStorage:', localStorage.getItem('user_role'))
       }
 
       // Pequeno delay para garantir que foi salvo
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // Redirecionar imediatamente
-      console.log('Iniciando redirecionamento para:', role === 'professional' ? '/dashboard/profissional' : '/dashboard')
       if (role === 'professional') {
         router.push('/dashboard/profissional')
       } else {
