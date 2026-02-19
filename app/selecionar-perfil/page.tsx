@@ -92,11 +92,13 @@ export default function SelecionarPerfilPage() {
     const role = e.target.value
     
     if (!role) {
+      console.log('Nenhum perfil selecionado')
       setToast({ message: 'Selecione um perfil', type: 'error' })
       return
     }
 
     try {
+      console.log('Perfil selecionado:', role)
       setSubmitting(true)
       setSelectedRole(role)
 
@@ -104,16 +106,16 @@ export default function SelecionarPerfilPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('user_role', role)
         sessionStorage.setItem('user_role', role)
+        console.log('Role salvo no localStorage:', role)
       }
 
-      // Redirecionar após seleção
-      setTimeout(() => {
-        if (role === 'professional') {
-          router.push('/dashboard/profissional')
-        } else {
-          router.push('/dashboard')
-        }
-      }, 300)
+      // Redirecionar imediatamente
+      console.log('Redirecionando para:', role === 'professional' ? '/dashboard/profissional' : '/dashboard')
+      if (role === 'professional') {
+        router.push('/dashboard/profissional')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (error) {
       console.error('Erro ao selecionar perfil:', error)
       setToast({ message: 'Erro ao selecionar perfil', type: 'error' })
