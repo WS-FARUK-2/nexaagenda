@@ -89,24 +89,29 @@ export default function SelecionarPerfilPage() {
   }, [router])
 
   const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log('handleSelectChange disparado com evento:', e)
+    console.log('event.target.value:', e.target.value)
+    
     const role = e.target.value
     
     console.log('Valor do dropdown:', e.target.value)
     console.log('Role extraído:', role)
+    console.log('Tipo de role:', typeof role)
+    console.log('Role vazio?:', role === '')
     
     if (!role || role === '') {
-      console.log('Nenhum perfil selecionado')
+      console.log('Nenhum perfil selecionado - retornando')
       return
     }
 
     try {
-      console.log('Salvando role:', role)
+      console.log('Perfil selecionado válido:', role)
       
       // Salvar role selecionado ANTES de redirecionar
       if (typeof window !== 'undefined') {
         localStorage.setItem('user_role', role)
         sessionStorage.setItem('user_role', role)
-        console.log('Role salvo:', localStorage.getItem('user_role'))
+        console.log('Role salvo no localStorage:', localStorage.getItem('user_role'))
       }
 
       // Pequeno delay para garantir que foi salvo
