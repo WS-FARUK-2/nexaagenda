@@ -241,6 +241,106 @@ CREATE POLICY "Anyone can view schedules"
   USING (true);
 
 -- ==========================================
+-- 7. CRIAR TABELA PROFESSIONALS (PROFISSIONAIS)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS professionals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
+  phone VARCHAR(20),
+  birth_date DATE,
+  commission DECIMAL(5, 2) DEFAULT 0,
+  color VARCHAR(7) DEFAULT '#E87A3F',
+  photo_url TEXT,
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para professionals
+DROP INDEX IF EXISTS idx_professionals_user_id;
+DROP INDEX IF EXISTS idx_professionals_email;
+CREATE INDEX idx_professionals_user_id ON professionals(user_id);
+CREATE INDEX idx_professionals_email ON professionals(email);
+
+-- RLS para professionals
+ALTER TABLE professionals ENABLE ROW LEVEL SECURITY;
+
+-- Drop policies existentes
+DROP POLICY IF EXISTS "Users can manage their own professionals" ON professionals;
+DROP POLICY IF EXISTS "Anyone can view active professionals" ON professionals;
+
+-- Policies
+CREATE POLICY "Users can manage their own professionals"
+  ON professionals
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Anyone can view active professionals"
+  ON professionals
+  FOR SELECT
+  USING (active = true);
+
+-- ==========================================
+-- 8. CRIAR TABELA SERVICE_PROFESSIONALS (VÍNCULO SERVIÇO-PROFISSIONAL)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS service_professionals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  service_id UUID NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+  professional_id UUID NOT NULL REFERENCES professionals(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para service_professionals
+DROP INDEX IF EXISTS idx_service_professionals_service_id;
+DROP INDEX IF EXISTS idx_service_professionals_professional_id;
+DROP INDEX IF EXISTS idx_service_professionals_unique;
+CREATE INDEX idx_service_professionals_service_id ON service_professionals(service_id);
+CREATE INDEX idx_service_professionals_professional_id ON service_professionals(professional_id);
+CREATE UNIQUE INDEX idx_service_professionals_unique ON service_professionals(service_id, professional_id);
+
+-- RLS para service_professionals
+ALTER TABLE service_professionals ENABLE ROW LEVEL SECURITY;
+
+-- Drop policies existentes
+DROP POLICY IF EXISTS "Users can manage their own service_professionals" ON service_professionals;
+DROP POLICY IF EXISTS "Anyone can view service_professionals" ON service_professionals;
+
+-- Policies
+CREATE POLICY "Users can manage their own service_professionals"
+  ON service_professionals
+  FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM services s
+      WHERE s.id = service_id
+      AND s.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM services s
+      WHERE s.id = service_id
+      AND s.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Anyone can view service_professionals"
+  ON service_professionals
+  FOR SELECT
+  USING (true);
+
+-- ==========================================
+-- 9. ADICIONAR COLUNA PROFESSIONAL_ID EM AGENDAMENTOS_PUBLICOS
+-- ==========================================
+ALTER TABLE agendamentos_publicos
+ADD COLUMN IF NOT EXISTS professional_id UUID REFERENCES professionals(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_agendamentos_publicos_professional_id ON agendamentos_publicos(professional_id);
+
+-- ==========================================
 -- VERIFICAÇÃO
 -- ==========================================
 -- Rodar após executar o script acima:
