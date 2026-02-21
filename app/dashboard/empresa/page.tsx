@@ -46,6 +46,36 @@ interface Horario {
 
 const DIAS_SEMANA = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
 
+const CIDADES_POR_ESTADO: Record<string, string[]> = {
+  'AC': ['Rio Branco', 'Cruzeiro do Sul', 'Sena Madureira', 'Tarauacá'],
+  'AL': ['Maceió', 'Arapiraca', 'Palmeira dos Índios', 'Rio Largo'],
+  'AP': ['Macapá', 'Santana', 'Laranjal do Jari', 'Oiapoque'],
+  'AM': ['Manaus', 'Parintins', 'Itacoatiara', 'Manacapuru'],
+  'BA': ['Salvador', 'Feira de Santana', 'Vitória da Conquista', 'Camaçari', 'Itabuna', 'Juazeiro'],
+  'CE': ['Fortaleza', 'Caucaia', 'Juazeiro do Norte', 'Maracanaú', 'Sobral'],
+  'DF': ['Brasília', 'Taguatinga', 'Ceilândia', 'Samambaia'],
+  'ES': ['Vitória', 'Vila Velha', 'Serra', 'Cariacica', 'Linhares'],
+  'GO': ['Goiânia', 'Aparecida de Goiânia', 'Anápolis', 'Rio Verde', 'Luziânia'],
+  'MA': ['São Luís', 'Imperatriz', 'São José de Ribamar', 'Timon', 'Caxias'],
+  'MT': ['Cuiabá', 'Várzea Grande', 'Rondonópolis', 'Sinop', 'Tangará da Serra'],
+  'MS': ['Campo Grande', 'Dourados', 'Três Lagoas', 'Corumbá', 'Ponta Porã'],
+  'MG': ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Juiz de Fora', 'Betim', 'Montes Claros'],
+  'PA': ['Belém', 'Ananindeua', 'Santarém', 'Marabá', 'Castanhal', 'Parauapebas'],
+  'PB': ['João Pessoa', 'Campina Grande', 'Santa Rita', 'Patos', 'Bayeux'],
+  'PR': ['Curitiba', 'Londrina', 'Maringá', 'Ponta Grossa', 'Cascavel', 'Foz do Iguaçu'],
+  'PE': ['Recife', 'Jaboatão dos Guararapes', 'Olinda', 'Caruaru', 'Petrolina'],
+  'PI': ['Teresina', 'Parnaíba', 'Picos', 'Piripiri', 'Floriano'],
+  'RJ': ['Rio de Janeiro', 'São Gonçalo', 'Duque de Caxias', 'Nova Iguaçu', 'Niterói', 'Campos dos Goytacazes'],
+  'RN': ['Natal', 'Mossoró', 'Parnamirim', 'São Gonçalo do Amarante', 'Macaíba'],
+  'RS': ['Porto Alegre', 'Caxias do Sul', 'Pelotas', 'Canoas', 'Santa Maria', 'Gravataí'],
+  'RO': ['Porto Velho', 'Ji-Paraná', 'Ariquemes', 'Cacoal', 'Vilhena'],
+  'RR': ['Boa Vista', 'Rorainópolis', 'Caracaraí', 'Alto Alegre'],
+  'SC': ['Florianópolis', 'Joinville', 'Blumenau', 'São José', 'Criciúma', 'Chapecó'],
+  'SP': ['São Paulo', 'Guarulhos', 'Campinas', 'São Bernardo do Campo', 'Santo André', 'Osasco', 'Ribeirão Preto', 'Sorocaba'],
+  'SE': ['Aracaju', 'Nossa Senhora do Socorro', 'Lagarto', 'Itabaiana', 'Estância'],
+  'TO': ['Palmas', 'Araguaína', 'Gurupi', 'Porto Nacional', 'Paraíso do Tocantins']
+}
+
 export default function DadosEmpresaPage() {
   const [user, setUser] = useState<any>(null)
   const [company, setCompany] = useState<CompanyData | null>(null)
@@ -655,7 +685,9 @@ export default function DadosEmpresaPage() {
                 </label>
                 <select
                   value={formData.estado}
-                  onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, estado: e.target.value, cidade: '' })
+                  }}
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -704,18 +736,26 @@ export default function DadosEmpresaPage() {
                 <select
                   value={formData.cidade}
                   onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
+                  disabled={!formData.estado}
                   style={{
                     width: '100%',
                     padding: '10px',
                     border: '1px solid #cbd5e1',
                     borderRadius: '6px',
                     fontSize: '14px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    backgroundColor: !formData.estado ? '#f3f4f6' : 'white',
+                    cursor: !formData.estado ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  <option value="">Selecione...</option>
-                  <option value="Marabá">Marabá</option>
-                  {/* Adicionar mais cidades */}
+                  <option value="">
+                    {formData.estado ? 'Selecione a cidade...' : 'Selecione o estado primeiro'}
+                  </option>
+                  {formData.estado && CIDADES_POR_ESTADO[formData.estado]?.map((cidade) => (
+                    <option key={cidade} value={cidade}>
+                      {cidade}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
