@@ -612,14 +612,6 @@ export default function AgendarPage() {
                                 {(() => {
                                   const serviceProfessionals = professionals[service.id] || []
                                   
-                                  if (serviceProfessionals.length === 0) {
-                                    return (
-                                      <p style={{ color: '#9ca3af', fontSize: '14px', fontStyle: 'italic' }}>
-                                        Nenhum profissional disponível para este serviço
-                                      </p>
-                                    )
-                                  }
-                                  
                                   return (
                                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                                       {serviceProfessionals.map((prof: any) => {
