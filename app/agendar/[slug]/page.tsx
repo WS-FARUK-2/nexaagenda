@@ -33,6 +33,8 @@ interface CompanyData {
   cep?: string
   descricao?: string
   website?: string
+  logo_url?: string
+  foto_fachada_url?: string
 }
 
 interface HorarioSemana {
@@ -122,7 +124,7 @@ export default function AgendarPage() {
         // Buscar dados da empresa (opcional)
         const { data: companyData } = await supabase
           .from('company_data')
-          .select('nome_empresa, telefone, endereco, cidade, estado, cep, descricao, website')
+          .select('nome_empresa, telefone, endereco, cidade, estado, cep, descricao, website, logo_url, foto_fachada_url')
           .eq('user_id', profileData.user_id)
           .single()
 
@@ -132,9 +134,10 @@ export default function AgendarPage() {
 
         // Buscar horários de atendimento
         const { data: horariosData } = await supabase
-          .from('horarios_disponiveis')
+          .from('horarios')
           .select('dia_semana, hora_inicio, hora_fim')
           .eq('user_id', profileData.user_id)
+          .eq('ativo', true)
           .order('dia_semana')
           .order('hora_inicio')
 
@@ -778,6 +781,33 @@ export default function AgendarPage() {
 
           {/* Coluna lateral */}
           <div>
+            {/* Logo/Foto da Empresa */}
+            {(company?.logo_url || company?.foto_fachada_url) && (
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '10px',
+                padding: '18px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                marginBottom: '16px',
+                textAlign: 'center'
+              }}>
+                <img
+                  src={company.logo_url || company.foto_fachada_url}
+                  alt={company.nome_empresa || 'Logo da empresa'}
+                  style={{
+                    width: '100%',
+                    maxHeight: '200px',
+                    objectFit: 'cover',
+                    borderRadius: '8px'
+                  }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Contato */}
             <div style={{
               backgroundColor: 'white',
               borderRadius: '10px',
@@ -785,51 +815,124 @@ export default function AgendarPage() {
               boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
               marginBottom: '16px'
             }}>
-              <h3 style={{ margin: '0 0 10px 0' }}>Contato</h3>
-              <p style={{ margin: 0, color: '#374151', fontSize: '14px' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600 }}>Contato</h3>
+              
+              <p style={{ margin: '0 0 8px 0', color: '#111827', fontSize: '14px', fontWeight: 600 }}>
                 {company?.nome_empresa || profile?.nome_profissional}
               </p>
+              
               {company?.endereco && (
-                <p style={{ margin: '6px 0 0 0', color: '#6b7280', fontSize: '14px' }}>
-                  {company.endereco}
-                  {company.cidade ? `, ${company.cidade}` : ''}
-                  {company.estado ? ` - ${company.estado}` : ''}
+                <p style={{ margin: '0 0 8px 0', color: '#6b7280', fontSize: '14px', lineHeight: '1.5' }}>
+                  📍 {company.endereco}
+                  {company.cidade && `, ${company.cidade}`}
+                  {company.estado && ` - ${company.estado}`}
+                  {company.cep && ` • CEP ${company.cep}`}
                 </p>
               )}
+              
               {company?.telefone && (
-                <p style={{ margin: '6px 0 0 0', color: '#111827', fontSize: '14px', fontWeight: 600 }}>
-                  {company.telefone}
+                <p style={{ margin: '0 0 8px 0', color: '#111827', fontSize: '14px', fontWeight: 600 }}>
+                  📞 {company.telefone}
+                </p>
+              )}
+              
+              {company?.website && (
+                <p style={{ margin: 0, fontSize: '14px' }}>
+                  <a 
+                    href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: corPrimaria, textDecoration: 'none' }}
+                  >
+                    🌐 Website
+                  </a>
                 </p>
               )}
             </div>
 
+            {/* Horários de atendimento */}
             <div style={{
               backgroundColor: 'white',
               borderRadius: '10px',
               padding: '18px',
               boxShadow: '0 2px 4px rgba(0,0,0,0.08)'
             }}>
-              <h3 style={{ margin: '0 0 10px 0' }}>Horários de atendimento</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Horários de atendimento</h3>
+                {horariosSemana.length === 0 && (
+                  <span style={{
+                    backgroundColor: '#fef2f2',
+                    color: '#dc2626',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: 600
+                  }}>
+                    Fechado
+                  </span>
+                )}
+              </div>
+              
               <div style={{ fontSize: '14px', color: '#374151' }}>
                 {horariosSemana.length === 0 ? (
-                  <p style={{ margin: 0, color: '#dc2626' }}>Fechado</p>
+                  <p style={{ margin: 0, color: '#9ca3af', fontSize: '13px' }}>
+                    Horários não configurados
+                  </p>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {diasSemanaMap.map((dia, index) => {
                       const horariosDoDia = horariosSemana.filter(h => h.dia_semana === index)
+                      const hoje = new Date().getDay()
+                      const isHoje = index === hoje
+                      
                       if (horariosDoDia.length === 0) {
                         return (
-                          <div key={dia} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>{dia}</span>
-                            <span style={{ color: '#9ca3af' }}>Fechado</span>
+                          <div key={dia} style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '6px 0',
+                            borderBottom: index < 6 ? '1px solid #f3f4f6' : 'none'
+                          }}>
+                            <span style={{ 
+                              fontWeight: isHoje ? 600 : 400,
+                              color: isHoje ? corPrimaria : '#374151'
+                            }}>
+                              {dia}
+                            </span>
+                            <span style={{
+                              backgroundColor: '#f3f4f6',
+                              color: '#9ca3af',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: 500
+                            }}>
+                              Fechado
+                            </span>
                           </div>
                         )
                       }
 
                       return (
-                        <div key={dia} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>{dia}</span>
-                          <span style={{ color: '#111827' }}>
+                        <div key={dia} style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '6px 0',
+                          borderBottom: index < 6 ? '1px solid #f3f4f6' : 'none'
+                        }}>
+                          <span style={{ 
+                            fontWeight: isHoje ? 600 : 400,
+                            color: isHoje ? corPrimaria : '#374151'
+                          }}>
+                            {dia}
+                          </span>
+                          <span style={{ 
+                            color: '#111827',
+                            fontSize: '13px',
+                            fontWeight: isHoje ? 600 : 400
+                          }}>
                             {horariosDoDia
                               .map(h => `${h.hora_inicio.substring(0, 5)} - ${h.hora_fim.substring(0, 5)}`)
                               .join(' / ')}

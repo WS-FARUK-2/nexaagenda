@@ -155,6 +155,92 @@ CREATE POLICY "Authenticated users can insert their profile"
   WITH CHECK (auth.uid() = user_id);
 
 -- ==========================================
+-- 5. CRIAR TABELA COMPANY_DATA (DADOS DA EMPRESA)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS company_data (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  nome_empresa VARCHAR(255),
+  cnpj VARCHAR(20),
+  telefone VARCHAR(20),
+  email VARCHAR(255),
+  endereco TEXT,
+  cidade VARCHAR(100),
+  estado VARCHAR(2),
+  cep VARCHAR(10),
+  descricao TEXT,
+  website VARCHAR(255),
+  logo_url TEXT,
+  foto_fachada_url TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para company_data
+DROP INDEX IF EXISTS idx_company_data_user_id;
+CREATE INDEX idx_company_data_user_id ON company_data(user_id);
+
+-- RLS para company_data
+ALTER TABLE company_data ENABLE ROW LEVEL SECURITY;
+
+-- Drop policies existentes
+DROP POLICY IF EXISTS "Users can manage their own company data" ON company_data;
+DROP POLICY IF EXISTS "Anyone can view company data" ON company_data;
+
+-- Policies
+CREATE POLICY "Users can manage their own company data"
+  ON company_data
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Anyone can view company data"
+  ON company_data
+  FOR SELECT
+  USING (true);
+
+-- ==========================================
+-- 6. CRIAR TABELA HORARIOS (HORÁRIOS DE FUNCIONAMENTO)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS horarios (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  dia_semana INTEGER NOT NULL CHECK (dia_semana >= 0 AND dia_semana <= 6),
+  hora_inicio TIME NOT NULL,
+  hora_fim TIME NOT NULL,
+  horario_almoco_inicio TIME,
+  horario_almoco_fim TIME,
+  ativo BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para horarios
+DROP INDEX IF EXISTS idx_horarios_user_id;
+DROP INDEX IF EXISTS idx_horarios_dia_semana;
+CREATE INDEX idx_horarios_user_id ON horarios(user_id);
+CREATE INDEX idx_horarios_dia_semana ON horarios(dia_semana);
+
+-- RLS para horarios
+ALTER TABLE horarios ENABLE ROW LEVEL SECURITY;
+
+-- Drop policies existentes
+DROP POLICY IF EXISTS "Users can manage their own schedules" ON horarios;
+DROP POLICY IF EXISTS "Anyone can view schedules" ON horarios;
+
+-- Policies
+CREATE POLICY "Users can manage their own schedules"
+  ON horarios
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Anyone can view schedules"
+  ON horarios
+  FOR SELECT
+  USING (true);
+
+-- ==========================================
 -- VERIFICAÇÃO
 -- ==========================================
 -- Rodar após executar o script acima:
