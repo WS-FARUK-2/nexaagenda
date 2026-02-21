@@ -96,7 +96,18 @@ export default function SelecionarPerfilPage() {
     <div
       style={{
         display: 'flex',
-        flexDirectiisMobile ? '30px 20px' : '50px 40px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#f3f4f6',
+        padding: isMobile ? '20px' : '40px',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          padding: isMobile ? '30px 20px' : '50px 40px',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
           maxWidth: '500px',
           width: '100%',
@@ -110,20 +121,7 @@ export default function SelecionarPerfilPage() {
 
         {/* Texto */}
         <p style={{ 
-          fontSize: isMobile, 0, 0.3)',
-          maxWidth: '500px',
-          width: '100%',
-          textAlign: 'center',
-        }}
-      >
-        {/* Logo */}
-        <div style={{ marginBottom: '25px', fontSize: window.innerWidth < 600 ? '48px' : '60px' }}>
-          🕐
-        </div>
-
-        {/* Texto */}
-        <p style={{ 
-          fontSize: window.innerWidth < 600 ? '14px' : '16px', 
+          fontSize: isMobile ? '14px' : '16px', 
           color: '#2C5F6F',
           marginBottom: '25px',
           fontWeight: '500',
@@ -155,8 +153,8 @@ export default function SelecionarPerfilPage() {
             opacity: submitting ? 0.6 : 1,
             WebkitAppearance: 'none',
             MozAppearance: 'none',
-            minHeight: '48px', // Melhor para mobile
-            touchAction: 'manipulation', // Evita zoom no iOS
+            minHeight: '48px',
+            touchAction: 'manipulation',
           }}
         >
           <option value="">Selecione um perfil...</option>
