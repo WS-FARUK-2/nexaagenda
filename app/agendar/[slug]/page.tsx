@@ -612,115 +612,72 @@ export default function AgendarPage() {
                                 {(() => {
                                   const serviceProfessionals = professionals[service.id] || []
                                   
-                                  // Se houver profissionais cadastrados, mostra eles
-                                  if (serviceProfessionals.length > 0) {
+                                  if (serviceProfessionals.length === 0) {
                                     return (
-                                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                                        {serviceProfessionals.map((prof: any) => {
-                                          const isSelected = selectedProfessional === prof.id
-                                          return (
-                                            <div
-                                              key={prof.id}
-                                              onClick={() => {
-                                                setSelectedProfessional(prof.id)
-                                                setSelectedDate('')
-                                                setSelectedTime('')
-                                              }}
-                                              style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                cursor: 'pointer',
-                                                padding: '8px',
-                                                borderRadius: '8px',
-                                                border: isSelected ? `2px solid ${corPrimaria}` : '2px solid transparent',
-                                                backgroundColor: isSelected ? '#f0f9ff' : 'transparent'
-                                              }}
-                                            >
-                                              <div style={{
-                                                width: '56px',
-                                                height: '56px',
-                                                borderRadius: '50%',
-                                                overflow: 'hidden',
-                                                border: isSelected ? `3px solid ${corPrimaria}` : '2px solid #e5e7eb',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontWeight: 'bold',
-                                                fontSize: '20px',
-                                                backgroundColor: prof.color || '#f3f4f6',
-                                                color: 'white'
-                                              }}>
-                                                {prof.photo_url ? (
-                                                  <img
-                                                    src={prof.photo_url}
-                                                    alt={prof.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                  />
-                                                ) : (
-                                                  (prof.name || 'P')[0].toUpperCase()
-                                                )}
-                                              </div>
-                                              <span style={{ 
-                                                fontSize: '13px', 
-                                                fontWeight: isSelected ? 600 : 400,
-                                                color: isSelected ? corPrimaria : '#374151'
-                                              }}>
-                                                {prof.name}
-                                              </span>
-                                            </div>
-                                          )
-                                        })}
-                                      </div>
+                                      <p style={{ color: '#9ca3af', fontSize: '14px', fontStyle: 'italic' }}>
+                                        Nenhum profissional disponível para este serviço
+                                      </p>
                                     )
                                   }
                                   
-                                  // Senão, mostra o dono do perfil
                                   return (
-                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                      <div
-                                        onClick={() => {
-                                          setSelectedProfessional(profile!.user_id)
-                                          setSelectedDate('')
-                                          setSelectedTime('')
-                                        }}
-                                        style={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '10px',
-                                          cursor: 'pointer',
-                                          padding: '8px',
-                                          borderRadius: '8px',
-                                          border: selectedProfessional === profile!.user_id ? `2px solid ${corPrimaria}` : '2px solid transparent',
-                                          backgroundColor: selectedProfessional === profile!.user_id ? '#f0f9ff' : 'transparent'
-                                        }}
-                                      >
-                                        <div style={{
-                                          width: '44px',
-                                          height: '44px',
-                                          borderRadius: '50%',
-                                          overflow: 'hidden',
-                                          border: `2px solid ${corPrimaria}`,
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          fontWeight: 'bold',
-                                          backgroundColor: corPrimaria,
-                                          color: 'white'
-                                        }}>
-                                          {profile?.foto_url ? (
-                                            <img
-                                              src={profile.foto_url}
-                                              alt={profile.nome_profissional}
-                                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            />
-                                          ) : (
-                                            (profile?.nome_profissional || 'P')[0]
-                                          )}
-                                        </div>
-                                        <span>{profile?.nome_profissional}</span>
-                                      </div>
+                                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                      {serviceProfessionals.map((prof: any) => {
+                                        const isSelected = selectedProfessional === prof.id
+                                        return (
+                                          <div
+                                            key={prof.id}
+                                            onClick={() => {
+                                              setSelectedProfessional(prof.id)
+                                              setSelectedDate('')
+                                              setSelectedTime('')
+                                            }}
+                                            style={{
+                                              display: 'flex',
+                                              flexDirection: 'column',
+                                              alignItems: 'center',
+                                              gap: '6px',
+                                              cursor: 'pointer',
+                                              padding: '8px',
+                                              borderRadius: '8px',
+                                              border: isSelected ? `2px solid ${corPrimaria}` : '2px solid transparent',
+                                              backgroundColor: isSelected ? '#f0f9ff' : 'transparent'
+                                            }}
+                                          >
+                                            <div style={{
+                                              width: '56px',
+                                              height: '56px',
+                                              borderRadius: '50%',
+                                              overflow: 'hidden',
+                                              border: isSelected ? `3px solid ${corPrimaria}` : '2px solid #e5e7eb',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              fontWeight: 'bold',
+                                              fontSize: '20px',
+                                              backgroundColor: prof.color || '#f3f4f6',
+                                              color: 'white'
+                                            }}>
+                                              {prof.photo_url ? (
+                                                <img
+                                                  src={prof.photo_url}
+                                                  alt={prof.name}
+                                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                              ) : (
+                                                (prof.name || 'P')[0].toUpperCase()
+                                              )}
+                                            </div>
+                                            <span style={{ 
+                                              fontSize: '13px', 
+                                              fontWeight: isSelected ? 600 : 400,
+                                              color: isSelected ? corPrimaria : '#374151'
+                                            }}>
+                                              {prof.name}
+                                            </span>
+                                          </div>
+                                        )
+                                      })}
                                     </div>
                                   )
                                 })()}
