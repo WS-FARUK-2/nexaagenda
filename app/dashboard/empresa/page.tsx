@@ -13,15 +13,23 @@ interface CompanyData {
   id: string
   user_id: string
   nome_empresa?: string
-  cnpj?: string
+  tipo_empresa?: string
   telefone?: string
-  email?: string
+  facebook?: string
+  instagram?: string
   endereco?: string
+  numero?: string
+  complemento?: string
+  bairro?: string
   cidade?: string
   estado?: string
   cep?: string
+  latitude?: string
+  longitude?: string
   descricao?: string
-  website?: string
+  intervalo_grade?: number
+  formato_hora?: string
+  logo_url?: string
 }
 
 interface Horario {
@@ -52,15 +60,23 @@ export default function DadosEmpresaPage() {
 
   const [formData, setFormData] = useState({
     nome_empresa: '',
-    cnpj: '',
+    tipo_empresa: 'Barbearia',
     telefone: '',
-    email: '',
+    facebook: '',
+    instagram: '',
     endereco: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
     cidade: '',
     estado: '',
     cep: '',
+    latitude: '',
+    longitude: '',
     descricao: '',
-    website: ''
+    intervalo_grade: 15,
+    formato_hora: '24H',
+    logo_url: ''
   })
 
   const [modalFormData, setModalFormData] = useState({
@@ -270,16 +286,43 @@ export default function DadosEmpresaPage() {
             borderRadius: '8px',
             boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
           }}>
+            {/* Título do formulário */}
+            <h3 style={{ margin: '0 0 20px 0', color: '#9ca3af', fontSize: '14px' }}>
+              Editando {formData.nome_empresa || 'sua empresa'}
+            </h3>
+
+            {/* Upload de Logo */}
+            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+              <div style={{
+                width: '200px',
+                height: '150px',
+                margin: '0 auto',
+                border: '2px dashed #cbd5e1',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f8fafc',
+                cursor: 'pointer'
+              }}>
+                {formData.logo_url ? (
+                  <img src={formData.logo_url} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '6px' }} />
+                ) : (
+                  <span style={{ color: '#64748b', fontSize: '14px' }}>Selecione a logo</span>
+                )}
+              </div>
+            </div>
+
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              gridTemplateColumns: '2fr 1fr',
               gap: '20px',
-              marginBottom: '20px'
+              marginBottom: '30px'
             }}>
               {/* Nome Empresa */}
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                  Nome da Empresa
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Nome da empresa
                 </label>
                 <input
                   type="text"
@@ -287,164 +330,208 @@ export default function DadosEmpresaPage() {
                   onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
                     fontSize: '14px',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              {/* CNPJ */}
+              {/* Tipo Empresa */}
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                  CNPJ
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Tipo Empresa
                 </label>
-                <input
-                  type="text"
-                  placeholder="00.000.000/0000-00"
-                  value={formData.cnpj}
-                  onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                <select
+                  value={formData.tipo_empresa}
+                  onChange={(e) => setFormData({ ...formData, tipo_empresa: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
                     fontSize: '14px',
                     boxSizing: 'border-box'
                   }}
-                />
+                >
+                  <option value="Barbearia">Barbearia</option>
+                  <option value="Salão de Beleza">Salão de Beleza</option>
+                  <option value="Outra Área">Outra Área</option>
+                </select>
               </div>
+            </div>
 
+            {/* Descrição */}
+            <div style={{ marginBottom: '30px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                Descrição
+              </label>
+              <textarea
+                placeholder="Descreva sua empresa..."
+                value={formData.descricao}
+                onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  boxSizing: 'border-box',
+                  fontFamily: 'inherit',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+
+            {/* Informações de contato */}
+            <h4 style={{ margin: '30px 0 15px 0', color: '#9ca3af', fontSize: '14px' }}>
+              Informações de contato
+            </h4>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr 1fr',
+              gap: '20px',
+              marginBottom: '30px'
+            }}>
               {/* Telefone */}
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                   Telefone
                 </label>
                 <input
                   type="tel"
-                  placeholder="(11) 99999-9999"
+                  placeholder="(00) 0000-0000"
                   value={formData.telefone}
                   onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
                     fontSize: '14px',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              {/* Email */}
+              {/* Facebook */}
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-
-              {/* Website */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                  Website
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://seusite.com"
-                  value={formData.website}
-                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-
-              {/* Endereço */}
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                  Endereço
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Facebook
                 </label>
                 <input
                   type="text"
-                  placeholder="Rua, número, complemento"
-                  value={formData.endereco}
-                  onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                  placeholder="facebook"
+                  value={formData.facebook}
+                  onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
                     fontSize: '14px',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              {/* Cidade */}
+              {/* Instagram */}
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                  Cidade
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Instagram
                 </label>
                 <input
                   type="text"
-                  value={formData.cidade}
-                  onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
+                  placeholder="instagram"
+                  value={formData.instagram}
+                  onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
                     fontSize: '14px',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
+            </div>
 
-              {/* Estado */}
+            {/* Agendamento */}
+            <h4 style={{ margin: '30px 0 15px 0', color: '#9ca3af', fontSize: '14px' }}>
+              Agendamento
+            </h4>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '20px',
+              marginBottom: '30px'
+            }}>
+              {/* Intervalo grade de horários */}
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                  Estado
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Intervalo grade de horários
                 </label>
-                <input
-                  type="text"
-                  maxLength={2}
-                  placeholder="SP"
-                  value={formData.estado}
-                  onChange={(e) => setFormData({ ...formData, estado: e.target.value.toUpperCase() })}
+                <select
+                  value={formData.intervalo_grade}
+                  onChange={(e) => setFormData({ ...formData, intervalo_grade: parseInt(e.target.value) })}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
                     fontSize: '14px',
                     boxSizing: 'border-box'
                   }}
-                />
+                >
+                  <option value={15}>15 minutos</option>
+                  <option value={30}>30 minutos</option>
+                  <option value={60}>60 minutos</option>
+                </select>
               </div>
 
+              {/* Formato da hora */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Formato da hora
+                </label>
+                <select
+                  value={formData.formato_hora}
+                  onChange={(e) => setFormData({ ...formData, formato_hora: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="24H">24H</option>
+                  <option value="12H">12H</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Endereço */}
+            <h4 style={{ margin: '30px 0 15px 0', color: '#9ca3af', fontSize: '14px' }}>
+              Endereço
+            </h4>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 2fr 1fr',
+              gap: '20px',
+              marginBottom: '20px'
+            }}>
               {/* CEP */}
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                   CEP
                 </label>
                 <input
@@ -454,36 +541,241 @@ export default function DadosEmpresaPage() {
                   onChange={(e) => setFormData({ ...formData, cep: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
                     fontSize: '14px',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              {/* Descrição */}
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                  Descrição
+              {/* Rua */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Rua
                 </label>
-                <textarea
-                  placeholder="Descreva sua empresa..."
-                  value={formData.descricao}
-                  onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                <input
+                  type="text"
+                  placeholder="Rua josé carmindo"
+                  value={formData.endereco}
+                  onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
                     fontSize: '14px',
-                    boxSizing: 'border-box',
-                    minHeight: '120px',
-                    fontFamily: 'inherit'
+                    boxSizing: 'border-box'
                   }}
                 />
               </div>
+
+              {/* Número */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Número
+                </label>
+                <input
+                  type="text"
+                  placeholder="100 W"
+                  value={formData.numero}
+                  onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '20px',
+              marginBottom: '20px'
+            }}>
+              {/* Bairro */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Bairro
+                </label>
+                <input
+                  type="text"
+                  placeholder="Centro"
+                  value={formData.bairro}
+                  onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              {/* Complemento */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Complemento
+                </label>
+                <input
+                  type="text"
+                  placeholder="Sala 20"
+                  value={formData.complemento}
+                  onChange={(e) => setFormData({ ...formData, complemento: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '20px',
+              marginBottom: '20px'
+            }}>
+              {/* Estado */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Estado
+                </label>
+                <select
+                  value={formData.estado}
+                  onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="">Selecione...</option>
+                  <option value="PA">Pará</option>
+                  <option value="SP">São Paulo</option>
+                  <option value="RJ">Rio de Janeiro</option>
+                  <option value="MG">Minas Gerais</option>
+                  {/* Adicionar mais estados */}
+                </select>
+              </div>
+
+              {/* Cidade */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Cidade
+                </label>
+                <select
+                  value={formData.cidade}
+                  onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="">Selecione...</option>
+                  <option value="Marabá">Marabá</option>
+                  {/* Adicionar mais cidades */}
+                </select>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '20px',
+              marginBottom: '20px'
+            }}>
+              {/* Latitude */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Latitude
+                </label>
+                <input
+                  type="text"
+                  placeholder="-8.33692936341994"
+                  value={formData.latitude}
+                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              {/* Longitude */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
+                  Longitude
+                </label>
+                <input
+                  type="text"
+                  placeholder="-36.4709019483294"
+                  value={formData.longitude}
+                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Botão de Geolocalização */}
+            <div style={{ marginBottom: '30px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                      setFormData({
+                        ...formData,
+                        latitude: position.coords.latitude.toString(),
+                        longitude: position.coords.longitude.toString()
+                      })
+                      setToast({ message: 'Localização obtida com sucesso!', type: 'success' })
+                    })
+                  }
+                }}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#2C5F6F',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '14px'
+                }}
+              >
+                📍 Pegar minha posição atual
+              </button>
             </div>
 
             {/* Botão Salvar */}
@@ -492,136 +784,157 @@ export default function DadosEmpresaPage() {
               disabled={submitting}
               style={{
                 width: '100%',
-                padding: '12px',
-                backgroundColor: '#2563eb',
+                padding: '14px',
+                backgroundColor: '#2C5F6F',
                 color: 'white',
                 border: 'none',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 cursor: submitting ? 'not-allowed' : 'pointer',
                 fontSize: '16px',
                 fontWeight: 'bold',
                 opacity: submitting ? 0.7 : 1
               }}
             >
-              {submitting ? 'Salvando...' : 'Salvar Dados'}
+              {submitting ? 'Salvando...' : '✓ Salvar'}
             </button>
           </form>
 
           {/* Seção de Horários */}
-          <div style={{ marginTop: '50px' }}>
-            <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h2 style={{ margin: '0 0 10px 0', color: '#1f2937' }}>Horários de Funcionamento</h2>
-                <p style={{ margin: 0, color: '#6b7280', fontSize: '14px' }}>
-                  Configure os horários de atendimento da sua empresa
-                </p>
-              </div>
-              <button
-                onClick={openNewModal}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#2C5F6F',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                ➕ Novo Horário
-              </button>
-            </div>
+          <div style={{ marginTop: '40px' }}>
+            <h4 style={{ margin: '0 0 20px 0', color: '#9ca3af', fontSize: '14px' }}>
+              Horários
+            </h4>
 
             {loadingHorarios ? (
               <LoadingSpinner />
-            ) : horarios.length === 0 ? (
-              <div style={{
-                backgroundColor: 'white',
-                padding: '30px',
-                borderRadius: '8px',
-                textAlign: 'center',
-                color: '#6b7280'
-              }}>
-                <p style={{ margin: '0' }}>Nenhum horário cadastrado ainda</p>
-              </div>
             ) : (
               <div style={{
                 backgroundColor: 'white',
                 borderRadius: '8px',
                 overflow: 'hidden',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                position: 'relative'
               }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>
-                      <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', color: '#374151' }}>Dia</th>
-                      <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', color: '#374151' }}>Horário</th>
-                      <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', color: '#374151' }}>Almoço</th>
-                      <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', color: '#374151' }}>Status</th>
-                      <th style={{ padding: '12px', textAlign: 'center', fontWeight: 'bold', color: '#374151' }}>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {horarios.map((horario, idx) => (
-                      <tr key={horario.id} style={{ 
-                        borderBottom: idx < horarios.length - 1 ? '1px solid #e5e7eb' : 'none' 
-                      }}>
-                        <td style={{ padding: '12px', color: '#1f2937' }}>
-                          {DIAS_SEMANA[horario.dia_semana] || 'N/A'}
-                        </td>
-                        <td style={{ padding: '12px', color: '#1f2937' }}>
-                          {horario.hora_inicio} às {horario.hora_fim}
-                        </td>
-                        <td style={{ padding: '12px', color: '#1f2937' }}>
-                          {horario.horario_almoco_inicio} às {horario.horario_almoco_fim}
-                        </td>
-                        <td style={{ padding: '12px', color: '#1f2937' }}>
-                          <span style={{
-                            padding: '4px 12px',
-                            borderRadius: '12px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            backgroundColor: horario.ativo ? '#d1fae5' : '#fee2e2',
-                            color: horario.ativo ? '#065f46' : '#991b1b'
-                          }}>
-                            {horario.ativo ? '✓ Ativo' : '✗ Inativo'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                          <button
-                            onClick={() => openEditModal(horario)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#2563eb',
-                              cursor: 'pointer',
-                              marginRight: '10px',
-                              fontSize: '14px',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button
-                            onClick={() => handleDeleteHorario(horario.id)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#dc2626',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            🗑️ Deletar
-                          </button>
-                        </td>
+                {/* Botão Novo Horário */}
+                <div style={{ padding: '15px', textAlign: 'right', borderBottom: '1px solid #e5e7eb' }}>
+                  <button
+                    onClick={openNewModal}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#2C5F6F',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      fontSize: '13px'
+                    }}
+                  >
+                    Novo horário
+                  </button>
+                </div>
+
+                {horarios.length === 0 ? (
+                  <div style={{
+                    padding: '40px',
+                    textAlign: 'center',
+                    color: '#9ca3af'
+                  }}>
+                    <p style={{ margin: '0' }}>Nenhum horário cadastrado ainda</p>
+                  </div>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#2C5F6F', color: 'white' }}>
+                        <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600', fontSize: '13px' }}>
+                          DIA DA SEMANA
+                        </th>
+                        <th style={{ padding: '15px', textAlign: 'center', fontWeight: '600', fontSize: '13px' }}>
+                          EXPEDIENTE
+                        </th>
+                        <th style={{ padding: '15px', textAlign: 'center', fontWeight: '600', fontSize: '13px' }}>
+                          ALMOÇO
+                        </th>
+                        <th style={{ padding: '15px', textAlign: 'center', fontWeight: '600', fontSize: '13px', width: '80px' }}>
+                          
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {horarios.map((horario, idx) => (
+                        <tr 
+                          key={horario.id} 
+                          style={{ 
+                            borderBottom: '1px solid #e5e7eb',
+                            backgroundColor: idx % 2 === 0 ? 'white' : '#f9fafb'
+                          }}
+                        >
+                          <td style={{ padding: '15px', color: '#1f2937', fontSize: '14px' }}>
+                            {DIAS_SEMANA[horario.dia_semana] || 'N/A'}
+                          </td>
+                          <td style={{ padding: '15px', textAlign: 'center', color: '#1f2937', fontSize: '14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                              <input type="time" value={horario.hora_inicio} readOnly style={{ padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '13px' }} />
+                              <span>à</span>
+                              <input type="time" value={horario.hora_fim} readOnly style={{ padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '13px' }} />
+                              <button style={{ background: 'none', border: 'none', color: '#2C5F6F', cursor: 'pointer', fontSize: '18px' }}>
+                                ⏱️
+                              </button>
+                            </div>
+                          </td>
+                          <td style={{ padding: '15px', textAlign: 'center', color: '#1f2937', fontSize: '14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                              <input type="time" value={horario.horario_almoco_inicio || '12:00'} readOnly style={{ padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '13px' }} />
+                              <span>à</span>
+                              <input type="time" value={horario.horario_almoco_fim || '13:00'} readOnly style={{ padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '13px' }} />
+                              <button style={{ background: 'none', border: 'none', color: '#2C5F6F', cursor: 'pointer', fontSize: '18px' }}>
+                                ⏱️
+                              </button>
+                            </div>
+                          </td>
+                          <td style={{ padding: '15px', textAlign: 'center' }}>
+                            <button
+                              onClick={() => handleDeleteHorario(horario.id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#dc2626',
+                                cursor: 'pointer',
+                                fontSize: '20px',
+                                padding: '5px 10px',
+                                borderRadius: '4px'
+                              }}
+                              title="Deletar"
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+
+                {/* Botão Salvar Fixo */}
+                {horarios.length > 0 && (
+                  <div style={{ padding: '15px', textAlign: 'right', borderTop: '1px solid #e5e7eb' }}>
+                    <button
+                      onClick={() => setToast({ message: 'Horários salvos!', type: 'success' })}
+                      style={{
+                        padding: '10px 24px',
+                        backgroundColor: '#2C5F6F',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '14px'
+                      }}
+                    >
+                      ✓ Salvar
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
