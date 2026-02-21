@@ -27,49 +27,7 @@ export default function SelecionarPerfilPage() {
 
         setUser(user)
 
-        const availablePerfis: Array<{ id: string; type: 'admin' | 'professional'; label: string }> = []
-
-        // Verificar se é admin (tem empresa)
-        try {
-          const { data: empresas, error: empresasError } = await supabase!
-            .from('company_data')
-            .select('id')
-            .eq('user_id', user.id)
-            .limit(1)
-
-          if (!empresasError && empresas && empresas.length > 0) {
-            availablePerfis.push({
-              id: 'admin',
-              type: 'admin',
-              label: 'Administrator'
-            })
-          }
-        } catch (error) {
-          console.error('Erro ao verificar perfil admin:', error)
-        }
-
-        // Verificar se é profissional
-        try {
-          const { data: professionals, error: profsError } = await supabase!
-            .from('professionals')
-            .select('id')
-            .eq('user_id', user.id)
-            .limit(1)
-
-          if (!profsError && professionals && professionals.length > 0) {
-            availablePerfis.push({
-              id: 'professional',
-              type: 'professional',
-              label: 'Profissional'
-            })
-          }
-        } catch (error) {
-          console.error('Erro ao verificar perfil professional:', error)
-        }
-
-        // Se tem NENHUM ou APENAS 1 perfil encontrado no banco
-        // Mostrar opções: Administrator e Profissional
-        // Deixar usuário escolher
+        // Sempre mostrar as duas opções: Administrator e Profissional
         const allOptions: Array<{ id: string; type: 'admin' | 'professional'; label: string }> = [
           { id: 'admin', type: 'admin', label: 'Administrator' },
           { id: 'professional', type: 'professional', label: 'Profissional' }
@@ -77,10 +35,10 @@ export default function SelecionarPerfilPage() {
 
         setPerfis(allOptions)
         setSelectedRole('') // Deixar vazio por padrão para forçar onChange
+        setLoading(false)
       } catch (error) {
-        console.error('Erro ao verificar perfis:', error)
-        setToast({ message: 'Erro ao carregar perfis', type: 'error' })
-      } finally {
+        console.error('Erro ao carregar página:', error)
+        setToast({ message: 'Erro ao carregar página', type: 'error' })
         setLoading(false)
       }
     }
