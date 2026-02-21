@@ -13,9 +13,19 @@ export default function SelecionarPerfilPage() {
   const [submitting, setSubmitting] = useState(false)
   const [perfis, setPerfis] = useState<Array<{ id: string; type: 'admin' | 'professional'; label: string }>>([])
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
+    // Detectar mobile
+    const checkMobile = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 600)
+      }
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
     const checkUser = async () => {
       try {
         const { data: { user } } = await supabase!.auth.getUser()
@@ -44,6 +54,10 @@ export default function SelecionarPerfilPage() {
     }
 
     checkUser()
+
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
   }, [router])
 
   const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -82,21 +96,21 @@ export default function SelecionarPerfilPage() {
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: '#e8e8e8',
-        padding: '15px',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      }}
-    >
-      <div
-        style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: window.innerWidth < 600 ? '30px 20px' : '50px 40px',
+        flexDirectiisMobile ? '30px 20px' : '50px 40px',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+          maxWidth: '500px',
+          width: '100%',
+          textAlign: 'center',
+        }}
+      >
+        {/* Logo */}
+        <div style={{ marginBottom: '25px', fontSize: isMobile ? '48px' : '60px' }}>
+          🕐
+        </div>
+
+        {/* Texto */}
+        <p style={{ 
+          fontSize: isMobile, 0, 0.3)',
           maxWidth: '500px',
           width: '100%',
           textAlign: 'center',
