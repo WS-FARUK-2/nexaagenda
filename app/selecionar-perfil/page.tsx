@@ -32,7 +32,7 @@ export default function SelecionarPerfilPage() {
         // Verificar se é admin (tem empresa)
         try {
           const { data: empresas, error: empresasError } = await supabase!
-            .from('empresas')
+            .from('company_data')
             .select('id')
             .eq('user_id', user.id)
             .limit(1)
@@ -51,7 +51,7 @@ export default function SelecionarPerfilPage() {
         // Verificar se é profissional
         try {
           const { data: professionals, error: profsError } = await supabase!
-            .from('profissionais')
+            .from('professionals')
             .select('id')
             .eq('user_id', user.id)
             .limit(1)
@@ -129,7 +129,7 @@ export default function SelecionarPerfilPage() {
         justifyContent: 'center',
         minHeight: '100vh',
         background: '#e8e8e8',
-        padding: '20px',
+        padding: '15px',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       }}
     >
@@ -137,7 +137,7 @@ export default function SelecionarPerfilPage() {
         style={{
           background: 'white',
           borderRadius: '12px',
-          padding: '50px 40px',
+          padding: window.innerWidth < 600 ? '30px 20px' : '50px 40px',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
           maxWidth: '500px',
           width: '100%',
@@ -145,16 +145,17 @@ export default function SelecionarPerfilPage() {
         }}
       >
         {/* Logo */}
-        <div style={{ marginBottom: '30px', fontSize: '60px' }}>
+        <div style={{ marginBottom: '25px', fontSize: window.innerWidth < 600 ? '48px' : '60px' }}>
           🕐
         </div>
 
         {/* Texto */}
         <p style={{ 
-          fontSize: '16px', 
+          fontSize: window.innerWidth < 600 ? '14px' : '16px', 
           color: '#2C5F6F',
-          marginBottom: '30px',
-          fontWeight: '500'
+          marginBottom: '25px',
+          fontWeight: '500',
+          lineHeight: '1.5'
         }}>
           Olá bem vindo de volta, agora selecione qual perfil deseja acessar
         </p>
@@ -166,10 +167,10 @@ export default function SelecionarPerfilPage() {
           disabled={submitting}
           style={{
             width: '100%',
-            padding: '12px 16px',
+            padding: '14px 16px',
             fontSize: '16px',
-            border: '1px solid #ccc',
-            borderRadius: '6px',
+            border: '2px solid #ccc',
+            borderRadius: '8px',
             backgroundColor: 'white',
             color: '#333',
             cursor: submitting ? 'not-allowed' : 'pointer',
@@ -180,6 +181,10 @@ export default function SelecionarPerfilPage() {
             backgroundSize: '20px',
             paddingRight: '40px',
             opacity: submitting ? 0.6 : 1,
+            WebkitAppearance: 'none',
+            MozAppearance: 'none',
+            minHeight: '48px', // Melhor para mobile
+            touchAction: 'manipulation', // Evita zoom no iOS
           }}
         >
           <option value="">Selecione um perfil...</option>
