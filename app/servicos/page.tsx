@@ -164,6 +164,40 @@ export default function ServicosPage() {
     }
   }
 
+  const handleDelete = async (servicoId: string) => {
+    if (!window.confirm('Tem certeza que deseja deletar este serviço? Esta ação não pode ser desfeita.')) {
+      return
+    }
+
+    try {
+      // Deletar associações com profissionais primeiro
+      await supabase!
+        .from('service_professionals')
+        .delete()
+        .eq('service_id', servicoId)
+
+      // Deletar o serviço
+      const { error } = await supabase!
+        .from('services')
+        .delete()
+        .eq('id', servicoId)
+
+      if (error) {
+        setToast({ message: 'Erro ao deletar serviço: ' + error.message, type: 'error' })
+        return
+      }
+
+      setToast({ message: 'Serviço deletado com sucesso!', type: 'success' })
+      
+      const { data: { user } } = await supabase!.auth.getUser()
+      if (user) {
+        await loadServicos(user.id)
+      }
+    } catch (error: any) {
+      setToast({ message: 'Erro ao deletar serviço: ' + error.message, type: 'error' })
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -439,10 +473,25 @@ export default function ServicosPage() {
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        fontSize: '12px'
+                        fontSize: '12px',
+                        marginRight: '8px'
                       }}
                     >
                       Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(servico.id)}
+                      style={{
+                        padding: '6px 10px',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Deletar
                     </button>
                   </td>
                 </tr>
