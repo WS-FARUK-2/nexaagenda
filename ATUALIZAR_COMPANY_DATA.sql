@@ -23,8 +23,8 @@ DROP COLUMN IF EXISTS email,
 DROP COLUMN IF EXISTS website;
 
 -- Atualizar valores padrão
-UPDATE company_data 
-SET 
-  tipo_empresa = 'Barbearia' WHERE tipo_empresa IS NULL,
-  intervalo_grade = 15 WHERE intervalo_grade IS NULL,
-  formato_hora = '24H' WHERE formato_hora IS NULL;
+UPDATE company_data
+SET
+  tipo_empresa = COALESCE(tipo_empresa, 'Barbearia'),
+  intervalo_grade = COALESCE(intervalo_grade, 15),
+  formato_hora = COALESCE(formato_hora, '24H');
