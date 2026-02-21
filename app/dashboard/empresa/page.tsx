@@ -329,19 +329,51 @@ export default function DadosEmpresaPage() {
                 accept="image/*"
                 onChange={async (e) => {
                   const file = e.target.files?.[0]
-                  if (file) {
-                    // Validar tamanho (máximo 2MB)
-                    if (file.size > 2 * 1024 * 1024) {
-                      setToast({ message: 'Arquivo muito grande. Máximo 2MB.', type: 'error' })
-                      return
-                    }
+                  if (!file) return
+
+                  // Validar tamanho (máximo 5MB)
+                  if (file.size > 5 * 1024 * 1024) {
+                    setToast({ message: 'Arquivo muito grande. Máximo 5MB.', type: 'error' })
+                    return
+                  }
+
+                  try {
+                    setSubmitting(true)
                     
-                    // Converter para base64 ou usar URL temporária
-                    const reader = new FileReader()
-                    reader.onloadend = () => {
-                      setFormData({ ...formData, logo_url: reader.result as string })
+                    // Gerar nome único para o arquivo
+                    const fileExt = file.name.split('.').pop()
+                    const fileName = `${user.id}_${Date.now()}.${fileExt}`
+                    
+                    // Upload para Supabase Storage
+                    const { data: uploadData, error: uploadError } = await supabase!.storage
+                      .from('company-logos')
+                      .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                      })
+
+                    if (uploadError) throw uploadError
+
+                    // Deletar logo antiga se existir
+                    if (formData.logo_url && formData.logo_url.includes('company-logos')) {
+                      const oldPath = formData.logo_url.split('company-logos/')[1]?.split('?')[0]
+                      if (oldPath) {
+                        await supabase!.storage.from('company-logos').remove([oldPath])
+                      }
                     }
-                    reader.readAsDataURL(file)
+
+                    // Obter URL pública
+                    const { data: urlData } = supabase!.storage
+                      .from('company-logos')
+                      .getPublicUrl(fileName)
+
+                    setFormData({ ...formData, logo_url: urlData.publicUrl })
+                    setToast({ message: 'Logo enviada com sucesso!', type: 'success' })
+                  } catch (error: any) {
+                    console.error('Erro ao fazer upload:', error)
+                    setToast({ message: error.message || 'Erro ao enviar logo', type: 'error' })
+                  } finally {
+                    setSubmitting(false)
                   }
                 }}
                 style={{ display: 'none' }}
