@@ -323,24 +323,74 @@ export default function DadosEmpresaPage() {
 
             {/* Upload de Logo */}
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-              <div style={{
-                width: '200px',
-                height: '150px',
-                margin: '0 auto',
-                border: '2px dashed #cbd5e1',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#f8fafc',
-                cursor: 'pointer'
-              }}>
+              <input
+                type="file"
+                id="logoUpload"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    // Validar tamanho (máximo 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                      setToast({ message: 'Arquivo muito grande. Máximo 2MB.', type: 'error' })
+                      return
+                    }
+                    
+                    // Converter para base64 ou usar URL temporária
+                    const reader = new FileReader()
+                    reader.onloadend = () => {
+                      setFormData({ ...formData, logo_url: reader.result as string })
+                    }
+                    reader.readAsDataURL(file)
+                  }
+                }}
+                style={{ display: 'none' }}
+              />
+              <label
+                htmlFor="logoUpload"
+                style={{
+                  width: '200px',
+                  height: '150px',
+                  margin: '0 auto',
+                  border: '2px dashed #cbd5e1',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#f8fafc',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
                 {formData.logo_url ? (
-                  <img src={formData.logo_url} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '6px' }} />
+                  <>
+                    <img src={formData.logo_url} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '6px' }} />
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '0',
+                      left: '0',
+                      right: '0',
+                      backgroundColor: 'rgba(0,0,0,0.7)',
+                      color: 'white',
+                      padding: '5px',
+                      fontSize: '12px',
+                      opacity: '0',
+                      transition: 'opacity 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                    >
+                      Clique para trocar
+                    </div>
+                  </>
                 ) : (
-                  <span style={{ color: '#64748b', fontSize: '14px' }}>Selecione a logo</span>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '40px', marginBottom: '8px' }}>📷</div>
+                    <span style={{ color: '#64748b', fontSize: '14px' }}>Clique para selecionar a logo</span>
+                  </div>
                 )}
-              </div>
+              </label>
             </div>
 
             <div style={{
