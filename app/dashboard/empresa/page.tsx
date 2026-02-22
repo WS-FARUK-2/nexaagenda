@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Sidebar from '@/components/Sidebar'
+// import Sidebar from '@/components/Sidebar'
 import Toast from '@/components/Toast'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { requireAdminRole } from '@/lib/role'
@@ -287,7 +287,7 @@ export default function DadosEmpresaPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', height: '100vh' }}>
-        <Sidebar user={user} />
+        {/* Sidebar removido */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <LoadingSpinner />
         </div>
@@ -297,7 +297,7 @@ export default function DadosEmpresaPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <Sidebar user={user} />
+      {/* Sidebar removido */}
       
       <div style={{ flex: 1, padding: '20px' }}>
         <div style={{ maxWidth: '800px' }}>

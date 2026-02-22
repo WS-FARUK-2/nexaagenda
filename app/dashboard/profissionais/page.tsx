@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
-import Sidebar from '@/components/Sidebar'
+// import Sidebar from '@/components/Sidebar'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { requireAdminRole } from '@/lib/role'
 
@@ -115,7 +115,7 @@ export default function ProfissionaisPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', height: '100vh' }}>
-        <Sidebar user={user} />
+        {/* Sidebar removido */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <LoadingSpinner />
         </div>
@@ -139,7 +139,7 @@ export default function ProfissionaisPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <Sidebar user={user} />
+      {/* Sidebar removido */}
       
       <div style={{ flex: 1, padding: '20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -393,7 +393,7 @@ function ProfessionalForm({ user, professional, onClose }: {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <Sidebar user={user} />
+      {/* Sidebar removido */}
       
       <div style={{ flex: 1, padding: '20px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>

@@ -9,7 +9,7 @@ import EmptyState from '@/components/EmptyState'
 import ConfirmModal from '@/components/ConfirmModal'
 import CalendarGrid from '@/components/CalendarGrid'
 import { generateWhatsAppURL, generateAppointmentReminder } from '@/lib/whatsapp'
-import Sidebar from '@/components/Sidebar'
+// import Sidebar from '@/components/Sidebar'
 
 interface Patient {
   id: string
@@ -319,7 +319,7 @@ export default function AgendamentosPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh' }}>
-        <Sidebar user={user} />
+        {/* Sidebar removido */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <LoadingSpinner />
         </div>
@@ -329,7 +329,7 @@ export default function AgendamentosPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <Sidebar user={user} />
+      {/* Sidebar removido */}
       <div style={{ flex: 1, padding: '20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>

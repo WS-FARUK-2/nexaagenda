@@ -87,6 +87,7 @@ export default function AgendarPage() {
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
   const [availableTimes, setAvailableTimes] = useState<string[]>([])
+  const [showBookingModal, setShowBookingModal] = useState(false)
 
   const [formData, setFormData] = useState({
     nome_cliente: '',
@@ -95,7 +96,7 @@ export default function AgendarPage() {
     observacoes: ''
   })
 
-  // Carregar perfil e serviços com cache
+  // Carregar perfil e serviços com cache - teste 1
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -104,15 +105,15 @@ export default function AgendarPage() {
           setLoading(false)
           return
         }
-        // Tentar cache primeiro
+        // Tentar cache primeiro (APENAS para profile e services, não para professionals)
         const cachedProfile = getCache(`profile_${slug}`)
         const cachedServices = getCache(`services_${slug}`)
+        const cachedProfessionals = getCache(`professionals_${slug}`)
 
-        if (cachedProfile && cachedServices) {
+        if (cachedProfile && cachedServices && cachedProfessionals) {
           setProfile(cachedProfile)
           setServices(cachedServices)
-          setLoading(false)
-          return
+          setProfessionals(cachedProfessionals)
         }
 
         // Buscar perfil pelo slug
@@ -134,11 +135,18 @@ export default function AgendarPage() {
         setCache(`profile_${slug}`, profileData, { expiresIn: 3600 })
 
         // Buscar dados da empresa (opcional)
-        const { data: companyData } = await supabase
+        const { data: companyList, error: companyError } = await supabase
           .from('company_data')
-          .select('nome_empresa, telefone, endereco, cidade, estado, cep, descricao, website, logo_url, foto_fachada_url')
+          .select('*')
           .eq('user_id', profileData.user_id)
-          .single()
+          .order('updated_at', { ascending: false })
+          .limit(1)
+
+        if (companyError) {
+          console.error('Erro ao buscar dados da empresa:', companyError)
+        }
+
+        const companyData = companyList && companyList.length > 0 ? companyList[0] : null
 
         if (companyData) {
           setCompany(companyData)
@@ -167,38 +175,76 @@ export default function AgendarPage() {
           // Cache serviços por 1 hora
           setCache(`services_${slug}`, servicesData, { expiresIn: 3600 })
 
+          // Fallback: se não carregou dados da empresa, tentar pelo user_id dos serviços
+          if (!company && servicesData.length > 0) {
+            const servicesUserId = servicesData[0].user_id
+            if (servicesUserId) {
+              const { data: fallbackCompanyList, error: fallbackCompanyError } = await supabase
+                .from('company_data')
+                .select('*')
+                .eq('user_id', servicesUserId)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+
+              if (fallbackCompanyError) {
+                console.error('Erro ao buscar dados da empresa (fallback):', fallbackCompanyError)
+              }
+
+              const fallbackCompany = fallbackCompanyList && fallbackCompanyList.length > 0 ? fallbackCompanyList[0] : null
+              if (fallbackCompany) {
+                setCompany(fallbackCompany)
+              }
+            }
+          }
+
           // Buscar profissionais vinculados a cada serviço
           const professionalsMap: Record<string, Professional[]> = {}
           
           for (const service of servicesData) {
-            const { data: serviceProfessionals } = await supabase
-              .from('service_professionals')
-              .select(`
-                professionals!inner (
-                  id,
-                  name,
-                  email,
-                  phone,
-                  photo_url,
-                  color,
-                  active
-                )
-              `)
-              .eq('service_id', service.id)
+            try {
+              // Buscar primeiro os IDs dos profissionais vinculados
+              const { data: serviceProfessionals, error: spError } = await supabase
+                .from('service_professionals')
+                .select('professional_id')
+                .eq('service_id', service.id)
 
-            if (serviceProfessionals && serviceProfessionals.length > 0) {
-              const profs = serviceProfessionals
-                .map((sp: any) => sp.professionals)
-                .filter((p: any) => p && p.active) as Professional[]
-              
-              professionalsMap[service.id] = profs
-            } else {
-              // Se não houver profissionais cadastrados, usa o dono do perfil
+              if (spError) {
+                console.error(`Erro ao buscar profissionais do serviço ${service.name}:`, spError)
+                professionalsMap[service.id] = []
+                continue
+              }
+
+              if (!serviceProfessionals || serviceProfessionals.length === 0) {
+                professionalsMap[service.id] = []
+                continue
+              }
+
+              // Extrair IDs dos profissionais
+              const professionalIds = serviceProfessionals.map((sp: any) => sp.professional_id)
+
+              // Buscar os dados dos profissionais
+              const { data: professionalData, error: profError } = await supabase
+                .from('professionals')
+                .select('id, name, email, phone, photo_url, color, active')
+                .in('id', professionalIds)
+                .eq('active', true)
+
+              if (profError) {
+                console.error(`Erro ao buscar dados dos profissionais do serviço ${service.name}:`, profError)
+                professionalsMap[service.id] = []
+                continue
+              }
+
+              professionalsMap[service.id] = (professionalData || []) as Professional[]
+            } catch (err) {
+              console.error(`Erro ao processar serviço ${service.name}:`, err)
               professionalsMap[service.id] = []
             }
           }
 
           setProfessionals(professionalsMap)
+          // Cache profissionais também
+          setCache(`professionals_${slug}`, professionalsMap, { expiresIn: 3600 })
         }
 
         setLoading(false)
@@ -401,6 +447,7 @@ export default function AgendarPage() {
       if (insertError) throw insertError
 
       setSuccess('🎉 Agendamento realizado com sucesso! Entraremos em contato em breve.')
+      setShowBookingModal(false)
       
       // Limpar formulário
       setSelectedService('')
@@ -471,42 +518,115 @@ export default function AgendarPage() {
         maxWidth: '1100px',
         margin: '0 auto'
       }}>
-        {/* Cabeçalho */}
+        {/* Topo com logo e login */}
         <div style={{
-          backgroundColor: corPrimaria,
-          color: 'white',
-          padding: '24px',
+          backgroundColor: 'white',
           borderRadius: '12px',
-          marginBottom: '20px',
+          padding: '14px 16px',
           display: 'flex',
           alignItems: 'center',
-          gap: '16px'
+          justifyContent: 'space-between',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+          marginBottom: '12px',
+          position: 'relative'
         }}>
+          <div style={{ width: '120px' }} />
           <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            backgroundColor: 'rgba(255,255,255,0.2)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold',
-            fontSize: '20px'
+            gap: '10px',
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)'
           }}>
-            {profile?.foto_url ? (
-              <img
-                src={profile.foto_url}
-                alt={profile.nome_profissional}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            ) : (
-              (profile?.nome_profissional || 'N')[0]
-            )}
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: corPrimaria,
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 800,
+              fontSize: '14px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+            }}>
+              NA
+            </div>
+            <span style={{ fontWeight: 800, color: '#111827', fontSize: '18px' }}>NexaAgenda</span>
           </div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '24px' }}>{profile?.nome_profissional}</h1>
-            <p style={{ margin: '4px 0 0 0', opacity: 0.9 }}>Agende seu horário online</p>
+          <a
+            href={`/agendar/${slug}/login`}
+            style={{
+              color: '#111827',
+              textDecoration: 'none',
+              fontWeight: 600,
+              fontSize: '13px'
+            }}
+          >
+            Efetuar login
+          </a>
+        </div>
+
+        {/* Informações da empresa */}
+        <div style={{
+          backgroundColor: '#111827',
+          color: 'white',
+          borderRadius: '12px',
+          padding: '18px',
+          marginBottom: '16px',
+          position: 'relative',
+          overflow: 'hidden',
+          backgroundImage: company?.foto_fachada_url ? `url(${company.foto_fachada_url})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}>
+          {company?.foto_fachada_url && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.55)'
+            }} />
+          )}
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '10px',
+              overflow: 'hidden',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              fontSize: '16px'
+            }}>
+              {company?.logo_url ? (
+                <img
+                  src={company.logo_url}
+                  alt={company?.nome_empresa || 'Logo da empresa'}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                (company?.nome_empresa || 'E')[0]
+              )}
+            </div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '20px' }}>
+                {company?.nome_empresa || 'Empresa não cadastrada'}
+              </h2>
+              {(company?.cidade || company?.estado) && (
+                <p style={{ margin: '4px 0 0 0', opacity: 0.9, fontSize: '13px' }}>
+                  {[company?.cidade, company?.estado].filter(Boolean).join(' - ')}
+                </p>
+              )}
+              {company?.endereco && (
+                <p style={{ margin: '2px 0 0 0', opacity: 0.9, fontSize: '12px' }}>
+                  {company.endereco}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -545,6 +665,93 @@ export default function AgendarPage() {
           gridTemplateColumns: '1fr',
           gap: '20px'
         }}>
+        {/* Barra de Progresso */}
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '12px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '8px'
+            }}>
+              {[
+                { label: 'Serviço', done: !!selectedService },
+                { label: 'Profissional', done: !!selectedProfessional },
+                { label: 'Data', done: !!selectedDate },
+                { label: 'Horário', done: !!selectedTime }
+              ].map((step, idx) => (
+                <div key={idx} style={{
+                  padding: '8px',
+                  borderRadius: '6px',
+                  backgroundColor: step.done ? corPrimaria : '#e5e7eb',
+                  color: step.done ? 'white' : '#9ca3af',
+                  fontWeight: 500,
+                  fontSize: '12px',
+                  textAlign: 'center',
+                  border: step.done ? `1px solid ${corPrimaria}` : '1px solid #d1d5db',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <div style={{ fontSize: '14px', marginBottom: '2px' }}>
+                    {step.done ? '✓' : '○'}
+                  </div>
+                  <div>{step.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Resumo das Seleções */}
+            {(selectedService || selectedProfessional || selectedDate || selectedTime) && (
+              <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #e5e7eb' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.5', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {selectedService && (
+                    <span style={{ 
+                      backgroundColor: '#f3f4f6', 
+                      padding: '3px 8px', 
+                      borderRadius: '4px',
+                      color: '#111827'
+                    }}>
+                      📋 {services.find(s => s.id === selectedService)?.name}
+                    </span>
+                  )}
+                  {selectedProfessional && (
+                    <span style={{ 
+                      backgroundColor: '#f3f4f6', 
+                      padding: '3px 8px', 
+                      borderRadius: '4px',
+                      color: '#111827'
+                    }}>
+                      👤 {professionals[selectedService]?.find(p => p.id === selectedProfessional)?.name || 'Selecionado'}
+                    </span>
+                  )}
+                  {selectedDate && (
+                    <span style={{ 
+                      backgroundColor: '#f3f4f6', 
+                      padding: '3px 8px', 
+                      borderRadius: '4px',
+                      color: '#111827'
+                    }}>
+                      📅 {new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR')}
+                    </span>
+                  )}
+                  {selectedTime && (
+                    <span style={{ 
+                      backgroundColor: '#f3f4f6', 
+                      padding: '3px 8px', 
+                      borderRadius: '4px',
+                      color: '#111827'
+                    }}>
+                      ⏰ {selectedTime}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Coluna principal */}
           <div>
             <form onSubmit={handleSubmit}>
@@ -611,6 +818,14 @@ export default function AgendarPage() {
                                 <p style={{ margin: '0 0 8px 0', fontWeight: 600 }}>Selecione o profissional</p>
                                 {(() => {
                                   const serviceProfessionals = professionals[service.id] || []
+                                  
+                                  if (serviceProfessionals.length === 0) {
+                                    return (
+                                      <div style={{ padding: '12px', backgroundColor: '#fee2e2', borderRadius: '6px', color: '#dc2626' }}>
+                                        ⚠️ Nenhum profissional disponível para este serviço
+                                      </div>
+                                    )
+                                  }
                                   
                                   return (
                                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -774,7 +989,6 @@ export default function AgendarPage() {
                 )}
               </div>
 
-              {/* Dados do cliente */}
               <div style={{
                 backgroundColor: 'white',
                 borderRadius: '10px',
@@ -782,125 +996,172 @@ export default function AgendarPage() {
                 boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                 marginBottom: '16px'
               }}>
-                <h3 style={{ margin: '0 0 12px 0', color: corPrimaria }}>Informe seus dados</h3>
-
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Nome Completo *</label>
-                  <input
-                    type="text"
-                    value={formData.nome_cliente}
-                    onChange={(e) => setFormData({ ...formData, nome_cliente: e.target.value })}
-                    placeholder="Seu nome"
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px'
-                    }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Telefone *</label>
-                  <input
-                    type="tel"
-                    value={formData.telefone_cliente}
-                    onChange={(e) => setFormData({ ...formData, telefone_cliente: e.target.value })}
-                    placeholder="(00) 00000-0000"
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px'
-                    }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Email (opcional)</label>
-                  <input
-                    type="email"
-                    value={formData.email_cliente}
-                    onChange={(e) => setFormData({ ...formData, email_cliente: e.target.value })}
-                    placeholder="seu@email.com"
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Observações (opcional)</label>
-                  <textarea
-                    value={formData.observacoes}
-                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                    placeholder="Alguma observação ou preferência?"
-                    rows={3}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px',
-                      fontFamily: 'inherit'
-                    }}
-                  />
-                </div>
+                <h3 style={{ margin: '0 0 10px 0', color: corPrimaria }}>Agendar</h3>
+                <p style={{ margin: '0 0 16px 0', color: '#6b7280', fontSize: '14px' }}>
+                  Clique em Agendar para informar seus dados e finalizar.
+                </p>
+                <button
+                  type="button"
+                  disabled={submitting || !selectedService || !selectedProfessional || !selectedDate || !selectedTime}
+                  onClick={() => setShowBookingModal(true)}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    backgroundColor: (selectedService && selectedProfessional && selectedDate && selectedTime) ? corPrimaria : '#d1d5db',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: (selectedService && selectedProfessional && selectedDate && selectedTime) ? 'pointer' : 'not-allowed',
+                    opacity: submitting ? 0.7 : 1,
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  Agendar
+                </button>
               </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  backgroundColor: corPrimaria,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  cursor: submitting ? 'not-allowed' : 'pointer',
-                  opacity: submitting ? 0.7 : 1
-                }}
-              >
-                {submitting ? 'Agendando...' : 'Finalizar o agendamento'}
-              </button>
+              {showBookingModal && (
+                <div
+                  onClick={() => setShowBookingModal(false)}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    backgroundColor: 'rgba(0,0,0,0.55)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999,
+                    padding: '16px'
+                  }}
+                >
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      width: '100%',
+                      maxWidth: '720px',
+                      backgroundColor: 'white',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                      position: 'relative'
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setShowBookingModal(false)}
+                      aria-label="Fechar"
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        background: 'transparent',
+                        border: 'none',
+                        fontSize: '20px',
+                        cursor: 'pointer',
+                        color: '#6b7280'
+                      }}
+                    >
+                      ✕
+                    </button>
+
+                    <h3 style={{ margin: '0 0 12px 0', color: corPrimaria }}>Informe seus dados</h3>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Nome Completo *</label>
+                      <input
+                        type="text"
+                        value={formData.nome_cliente}
+                        onChange={(e) => setFormData({ ...formData, nome_cliente: e.target.value })}
+                        placeholder="Seu nome"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Telefone *</label>
+                      <input
+                        type="tel"
+                        value={formData.telefone_cliente}
+                        onChange={(e) => setFormData({ ...formData, telefone_cliente: e.target.value })}
+                        placeholder="(00) 00000-0000"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Email (opcional)</label>
+                      <input
+                        type="email"
+                        value={formData.email_cliente}
+                        onChange={(e) => setFormData({ ...formData, email_cliente: e.target.value })}
+                        placeholder="seu@email.com"
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Observações (opcional)</label>
+                      <textarea
+                        value={formData.observacoes}
+                        onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                        placeholder="Alguma observação ou preferência?"
+                        rows={3}
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          fontFamily: 'inherit'
+                        }}
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submitting || !selectedService || !selectedProfessional || !selectedDate || !selectedTime || !formData.nome_cliente || !formData.telefone_cliente}
+                      style={{
+                        width: '100%',
+                        padding: '14px',
+                        backgroundColor: (selectedService && selectedProfessional && selectedDate && selectedTime && formData.nome_cliente && formData.telefone_cliente) ? corPrimaria : '#d1d5db',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        cursor: (selectedService && selectedProfessional && selectedDate && selectedTime && formData.nome_cliente && formData.telefone_cliente) ? 'pointer' : 'not-allowed',
+                        opacity: submitting ? 0.7 : 1,
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      {submitting ? 'Agendando...' : 'Finalizar o agendamento'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
 
           {/* Coluna lateral */}
           <div>
-            {/* Logo/Foto da Empresa */}
-            {(company?.logo_url || company?.foto_fachada_url) && (
-              <div style={{
-                backgroundColor: 'white',
-                borderRadius: '10px',
-                padding: '18px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-                marginBottom: '16px',
-                textAlign: 'center'
-              }}>
-                <img
-                  src={company.logo_url || company.foto_fachada_url}
-                  alt={company.nome_empresa || 'Logo da empresa'}
-                  style={{
-                    width: '100%',
-                    maxHeight: '200px',
-                    objectFit: 'cover',
-                    borderRadius: '8px'
-                  }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none'
-                  }}
-                />
-              </div>
-            )}
-
             {/* Contato */}
             <div style={{
               backgroundColor: 'white',
@@ -1028,7 +1289,12 @@ export default function AgendarPage() {
                             fontWeight: isHoje ? 600 : 400
                           }}>
                             {horariosDoDia
-                              .map(h => `${h.hora_inicio.substring(0, 5)} - ${h.hora_fim.substring(0, 5)}`)
+                              .filter(h => h.hora_inicio && h.hora_fim)
+                              .map(h => {
+                                const inicio = h.hora_inicio?.substring(0, 5) || '00:00'
+                                const fim = h.hora_fim?.substring(0, 5) || '00:00'
+                                return `${inicio} - ${fim}`
+                              })
                               .join(' / ')}
                           </span>
                         </div>

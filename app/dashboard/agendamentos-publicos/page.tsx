@@ -9,7 +9,7 @@ import EmptyState from '@/components/EmptyState';
 import ConfirmModal from '@/components/ConfirmModal';
 import { formatCurrency } from '@/lib/utils';
 import { generateWhatsAppURL, generateAppointmentReminder } from '@/lib/whatsapp';
-import Sidebar from '@/components/Sidebar';
+// import Sidebar from '@/components/Sidebar';
 import { requireAdminRole } from '@/lib/role';
 
 interface AgendamentoPublico {
@@ -188,7 +188,7 @@ export default function AgendamentosPublicos() {
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh' }}>
-        <Sidebar user={user} />
+        {/* Sidebar removido */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <LoadingSpinner />
         </div>
@@ -198,7 +198,7 @@ export default function AgendamentosPublicos() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <Sidebar user={user} />
+      {/* Sidebar removido */}
       <div style={{ flex: 1, padding: '20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ marginBottom: '30px' }}>

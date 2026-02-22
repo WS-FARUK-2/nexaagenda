@@ -7,7 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import Toast from '@/components/Toast'
 import EmptyState from '@/components/EmptyState'
 import { formatCurrency } from '@/lib/utils'
-import Sidebar from '@/components/Sidebar'
+// import Sidebar from '@/components/Sidebar'
 import { requireAdminRole } from '@/lib/role'
 
 type Servico = {
@@ -270,7 +270,7 @@ export default function ServicosPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh' }}>
-        <Sidebar user={user} />
+        {/* Sidebar removido */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <LoadingSpinner size={50} />
         </div>
@@ -280,7 +280,7 @@ export default function ServicosPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <Sidebar user={user} />
+      {/* Sidebar removido */}
       <div style={{ flex: 1, padding: '20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{

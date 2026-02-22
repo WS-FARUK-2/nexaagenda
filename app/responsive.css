@@ -657,17 +657,20 @@
     /* iPhone, iPad */
     body {
         -webkit-user-select: none;
+        user-select: none;
     }
 
     input,
     textarea {
         -webkit-user-select: text;
+        user-select: text;
     }
 
     /* Prevent rubber band scrolling */
     body {
         overscroll-behavior: none;
         -webkit-user-select: none;
+        user-select: none;
     }
 }
 
