@@ -130,108 +130,104 @@ import Sidebar from '@/components/Sidebar'
     router.push('/login')
   }
 
-  if (loading) {
-    return (
+  return (
+    loading ? (
       <div style={{ display: 'flex', height: '100vh' }}>
-        {/* Sidebar removido */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <LoadingSpinner />
         </div>
       </div>
-    )
-  }
-
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f0f4f8' }}>
-      {/* Botão para mostrar/ocultar Sidebar */}
-      <button
-        onClick={() => setSidebarVisible(!sidebarVisible)}
-        style={{
-          position: 'fixed',
-          top: 20,
-          left: sidebarVisible ? 320 : 20,
-          zIndex: 1000,
-          background: '#E87A3F',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '8px 12px',
-          cursor: 'pointer',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          transition: 'left 0.3s ease'
-        }}
-      >
-        {sidebarVisible ? '◀ Menu' : '▶ Menu'}
-      </button>
-      {/* Sidebar */}
-      {sidebarVisible && <Sidebar user={user} />}
-      <div style={{ flex: 1, padding: '30px 20px', marginLeft: sidebarVisible ? 0 : 0 }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-          {/* Header com Boas-vindas */}
-          <div style={{
-            backgroundImage: 'linear-gradient(135deg, #2C5F6F 0%, #1a3a47 100%)',
-            padding: '40px',
-            borderRadius: '12px',
-            marginBottom: '30px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            border: '2px solid #E87A3F',
-            color: 'white'
-          }}>
-            <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 'bold', color: 'white' }}>
-              🎯 Bem-vindo!
-            </h1>
-            <div style={{ height: '3px', width: '60px', backgroundColor: '#E87A3F', borderRadius: '2px', marginBottom: '12px' }} />
-            <p style={{ margin: '0', fontSize: '16px', opacity: 0.9, color: 'white' }}>
-              Aqui você gerencia toda sua agenda e negócio
-            </p>
-            <p style={{ margin: '8px 0 0', fontSize: '14px', opacity: 0.8, color: 'white' }}>
-              Email: <strong>{user?.email}</strong>
-            </p>
-          </div>
-          {/* Cards de Estatísticas Principais */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '20px',
-            marginBottom: '30px'
-          }}>
-            {/* Card Clientes */}
-            <div 
-              onClick={() => router.push('/clientes')}
-              style={{
-                backgroundColor: 'white',
-                padding: '28px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                borderLeft: '6px solid #2C5F6F',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-8px)'
-                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <h3 style={{ margin: 0, color: '#2C5F6F', fontSize: '14px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  👥 Clientes
-                </h3>
-                <span style={{ fontSize: '24px' }}>👤</span>
-              </div>
-              <p style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px', color: '#2C5F6F' }}>
-                {counts.clientes}
+    ) : (
+      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f0f4f8' }}>
+        {/* Botão para mostrar/ocultar Sidebar */}
+        <button
+          onClick={() => setSidebarVisible(!sidebarVisible)}
+          style={{
+            position: 'fixed',
+            top: 20,
+            left: sidebarVisible ? 320 : 20,
+            zIndex: 1000,
+            background: '#E87A3F',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            cursor: 'pointer',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            transition: 'left 0.3s ease'
+          }}
+        >
+          {sidebarVisible ? '◀ Menu' : '▶ Menu'}
+        </button>
+        {/* Sidebar */}
+        {sidebarVisible && <Sidebar user={user} />}
+        <div style={{ flex: 1, padding: '30px 20px', marginLeft: sidebarVisible ? 0 : 0 }}>
+          <div style={{ maxWidth: '1400px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+            {/* Header com Boas-vindas */}
+            <div style={{
+              backgroundImage: 'linear-gradient(135deg, #2C5F6F 0%, #1a3a47 100%)',
+              padding: '40px',
+              borderRadius: '12px',
+              marginBottom: '30px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              border: '2px solid #E87A3F',
+              color: 'white'
+            }}>
+              <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 'bold', color: 'white' }}>
+                🎯 Bem-vindo!
+              </h1>
+              <div style={{ height: '3px', width: '60px', backgroundColor: '#E87A3F', borderRadius: '2px', marginBottom: '12px' }} />
+              <p style={{ margin: '0', fontSize: '16px', opacity: 0.9, color: 'white' }}>
+                Aqui você gerencia toda sua agenda e negócio
               </p>
-              <p style={{ margin: '0', color: '#E87A3F', fontSize: '13px', fontWeight: '600' }}>
-                Clique para gerenciar →
+              <p style={{ margin: '8px 0 0', fontSize: '14px', opacity: 0.8, color: 'white' }}>
+                Email: <strong>{user?.email}</strong>
               </p>
             </div>
+            {/* Cards de Estatísticas Principais */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '20px',
+              marginBottom: '30px'
+            }}>
+              {/* Card Clientes */}
+              <div 
+                onClick={() => router.push('/clientes')}
+                style={{
+                  backgroundColor: 'white',
+                  padding: '28px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  borderLeft: '6px solid #2C5F6F',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px)'
+                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <h3 style={{ margin: 0, color: '#2C5F6F', fontSize: '14px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    👥 Clientes
+                  </h3>
+                  <span style={{ fontSize: '24px' }}>👤</span>
+                </div>
+                <p style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px', color: '#2C5F6F' }}>
+                  {counts.clientes}
+                </p>
+                <p style={{ margin: '0', color: '#E87A3F', fontSize: '13px', fontWeight: '600' }}>
+                  Clique para gerenciar →
+                </p>
+              </div>
 
             {/* Card Serviços */}
             <div 
