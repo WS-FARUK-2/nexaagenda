@@ -15,7 +15,7 @@ export default function DashboardPage() {
     agendamentosPublicos: 0,
   });
 
-  // Lógica do componente aqui (hooks, funções, etc)
+  // (hooks, funções, etc)
 
   return (
     <>
