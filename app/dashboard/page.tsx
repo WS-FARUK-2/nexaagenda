@@ -15,7 +15,7 @@ export default function DashboardPage() {
     agendamentosPublicos: 0,
   });
 
-  // (hooks, funções, etc)
+
 
   return (
     <>
