@@ -110,34 +110,6 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-                onClick={() => router.push('/dashboard/agendamentos-publicos')}
-                style={{
-                  backgroundColor: 'white',
-                  padding: '20px',
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  borderTop: '3px solid #8b5cf6',
-                  textAlign: 'center'
-                return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
-                    <div style={{ display: 'flex', gap: '16px' }}>
-                      {/* Card Agendamentos Públicos */}
-                      <div
-                        onClick={() => router.push('/dashboard/agendamentos-publicos')}
-                        style={{
-                          backgroundColor: 'white',
-                          padding: '20px',
-                          borderRadius: '12px',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                          cursor: 'pointer',
-                          transition: 'all 0.3s ease',
-                          borderTop: '3px solid #8b5cf6',
-                          textAlign: 'center',
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.transform = 'translateY(-4px)';
                           e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
                         }}
                         onMouseLeave={e => {
