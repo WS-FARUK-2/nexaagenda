@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import LoadingSpinner from '@/components/LoadingSpinner'
-// import Sidebar from '@/components/Sidebar'
+import Sidebar from '@/components/Sidebar'
 
-export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [counts, setCounts] = useState({
@@ -16,6 +15,7 @@ export default function DashboardPage() {
     agendamentosPublicos: 0
   })
   const router = useRouter()
+  const [sidebarVisible, setSidebarVisible] = useState(true)
 
   useEffect(() => {
     const getUser = async () => {
@@ -143,9 +143,30 @@ export default function DashboardPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f0f4f8' }}>
-      {/* Sidebar removido */}
-      
-      <div style={{ flex: 1, padding: '30px 20px' }}>
+      {/* Botão para mostrar/ocultar Sidebar */}
+      <button
+        onClick={() => setSidebarVisible(!sidebarVisible)}
+        style={{
+          position: 'fixed',
+          top: 20,
+          left: sidebarVisible ? 320 : 20,
+          zIndex: 1000,
+          background: '#E87A3F',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          padding: '8px 12px',
+          cursor: 'pointer',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          transition: 'left 0.3s ease'
+        }}
+      >
+        {sidebarVisible ? '◀ Menu' : '▶ Menu'}
+      </button>
+      {/* Sidebar */}
+      {sidebarVisible && <Sidebar user={user} />}
+      <div style={{ flex: 1, padding: '30px 20px', marginLeft: sidebarVisible ? 0 : 0 }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
           {/* Header com Boas-vindas */}
           <div style={{
@@ -168,7 +189,6 @@ export default function DashboardPage() {
               Email: <strong>{user?.email}</strong>
             </p>
           </div>
-
           {/* Cards de Estatísticas Principais */}
           <div style={{
             display: 'grid',
