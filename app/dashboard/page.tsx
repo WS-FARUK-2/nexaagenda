@@ -12,32 +12,38 @@ export default function DashboardPage() {
     clientes: 0,
     servicos: 0,
     agendamentos: 0,
-        }
-        {/* Cards extras agrupados */}
-        <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
-          {/* Card Agendamentos Públicos */}
-          <div
-            onClick={() => router.push('/dashboard/agendamentos-publicos')}
-            style={{
-              backgroundColor: 'white',
-              padding: '20px',
-              borderRadius: '12px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              borderTop: '3px solid #8b5cf6',
-              textAlign: 'center',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
-            }}
-          >
-            <h3 style={{ margin: '0 0 8px 0', color: '#8b5cf6', fontSize: '16px', fontWeight: '600' }}>📊</h3>
+    agendamentosPublicos: 0,
+  });
+
+  // ...existing code...
+
+  return (
+    <>
+      {/* Cards extras agrupados */}
+      <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+        {/* Card Agendamentos Públicos */}
+        <div
+          onClick={() => router.push('/dashboard/agendamentos-publicos')}
+          style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            borderTop: '3px solid #8b5cf6',
+            textAlign: 'center',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+          }}
+        >
+          <h3 style={{ margin: '0 0 8px 0', color: '#8b5cf6', fontSize: '16px', fontWeight: '600' }}>📊</h3>
             <p style={{ margin: '0 0 4px', color: '#374151', fontSize: '14px', fontWeight: '600' }}>Públicos</p>
             <p style={{ margin: '0', color: '#9ca3af', fontSize: '12px' }}>{counts.agendamentosPublicos} agendamentos</p>
           </div>
