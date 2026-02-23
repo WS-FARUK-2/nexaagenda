@@ -1,3 +1,4 @@
+// Sidebar atualizado conforme instruções
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -46,7 +47,16 @@ export default function Sidebar({ user }: { user: any }) {
     return pathname === href || pathname?.startsWith(href + '/')
   }
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== 'undefined' && window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => ({
@@ -98,7 +108,13 @@ export default function Sidebar({ user }: { user: any }) {
   ]
 
   return (
-    <>
+    <div
+      style={{
+        flexShrink: 0,
+        width: isOpen && !isMobile ? 300 : 0,
+        minWidth: 0,
+      }}
+    >
       {/* Overlay mobile */}
       {isMobileOpen && (
         <div
@@ -116,28 +132,28 @@ export default function Sidebar({ user }: { user: any }) {
         />
       )}
 
-      {/* Toggle button mobile */}
-      {isMobile && (
-        <button
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          style={{
-            position: 'fixed',
-            top: '16px',
-            left: '16px',
-            zIndex: 999,
-            background: '#E87A3F',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '8px 12px',
-            cursor: 'pointer',
-            fontSize: '18px',
-            fontWeight: 'bold'
-          }}
-        >
-          ☰
-        </button>
-      )}
+      {/* Botão hamburger - SEMPRE visível para abrir menu (mobile ou desktop colapsado) */}
+      <button
+        onClick={() => (isMobile ? setIsMobileOpen(!isMobileOpen) : setIsOpen(!isOpen))}
+        style={{
+          position: 'fixed',
+          top: '16px',
+          left: '16px',
+          zIndex: 1001,
+          background: '#E87A3F',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          padding: '10px 14px',
+          cursor: 'pointer',
+          fontSize: '20px',
+          fontWeight: 'bold',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+        }}
+        aria-label="Abrir menu"
+      >
+        ☰
+      </button>
 
       {/* Sidebar */}
       <div
@@ -146,12 +162,14 @@ export default function Sidebar({ user }: { user: any }) {
           top: 0,
           left: 0,
           width: isOpen ? '300px' : '0px',
+          minWidth: isOpen ? '300px' : '0px',
+          flexShrink: 0,
           height: '100vh',
           backgroundColor: '#2C5F6F',
           borderRight: '2px solid #1a3a47',
           overflowY: 'auto',
           transition: 'width 0.3s ease',
-          zIndex: isMobileOpen ? 999 : 'auto',
+          zIndex: 999,
           transform: isMobile ? (isMobileOpen ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
           display: 'flex',
           flexDirection: 'column',
@@ -215,7 +233,6 @@ export default function Sidebar({ user }: { user: any }) {
 
             return (
               <div key={section.id} style={{ marginBottom: '8px' }}>
-                {/* Section Header */}
                 <div
                   onClick={() => isOpen && toggleSection(section.id)}
                   style={{
@@ -249,12 +266,10 @@ export default function Sidebar({ user }: { user: any }) {
                   )}
                 </div>
 
-                {/* Section Items */}
                 {isOpen && isExpanded && (
                   <div style={{ borderLeft: '2px solid rgba(232, 122, 63, 0.3)' }}>
                     {filteredItems.map((item) => {
                       const isItemActive = isActive(item.href)
-
                       const baseStyle = {
                         padding: '10px 16px 10px 24px',
                         display: 'flex',
@@ -336,10 +351,7 @@ export default function Sidebar({ user }: { user: any }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={() => isMobile && setIsMobileOpen(false)}
-                            style={{
-                              ...baseStyle,
-                              textDecoration: 'none'
-                            }}
+                            style={{ ...baseStyle, textDecoration: 'none' }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = 'rgba(232, 122, 63, 0.08)'
                               e.currentTarget.style.color = '#FFFFFF'
@@ -360,7 +372,6 @@ export default function Sidebar({ user }: { user: any }) {
                   </div>
                 )}
 
-                {/* Collapsed view - show icons only */}
                 {isOpen && !isExpanded && filteredItems.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '0 8px' }}>
                     {filteredItems.slice(0, 2).map((item) => (
@@ -388,7 +399,6 @@ export default function Sidebar({ user }: { user: any }) {
           })}
         </nav>
 
-        {/* Logout Button */}
         {isOpen && (
           <div style={{ padding: '12px 16px', borderTop: '2px solid rgba(232, 122, 63, 0.2)' }}>
             <button
@@ -417,7 +427,6 @@ export default function Sidebar({ user }: { user: any }) {
           </div>
         )}
 
-        {/* Footer */}
         <div
           style={{
             padding: '12px',
@@ -431,6 +440,6 @@ export default function Sidebar({ user }: { user: any }) {
           <div>NexaAgenda v1.0</div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
